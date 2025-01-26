@@ -62,21 +62,21 @@
       var game = new Phaser.Game(config);
 
       function preload() {
-        this.load.image("background", "assets/images/background.png");
+        this.load.image("background", "/assets/images/background.png");
         this.load.image(
           "unitBubbleGround",
-          "assets/images/unit_bubble_ground.png"
+          "/assets/images/unit_bubble_ground.png"
         );
         this.load.image(
           "easyBubbleObstacle",
-          "assets/images/easy_bubble_obstacle.png"
+          "/assets/images/easy_bubble_obstacle.png"
         );
         this.load.image(
           "hardBubbleObstacle",
-          "assets/images/hard_bubble_obstacle.png"
+          "/assets/images/hard_bubble_obstacle.png"
         );
 
-        this.load.spritesheet("character", "assets/images/character.png", {
+        this.load.spritesheet("character", "/assets/images/character.png", {
           frameWidth: 32,
           frameHeight: 48,
         });
