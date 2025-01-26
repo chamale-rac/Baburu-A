@@ -108,7 +108,7 @@
         });
 
         // Load audio assets
-        this.load.audio("ambientMusic", "/assets/audio/ambient_music.mp3"); // Ambient background music
+        this.load.audio("ambientMusic", "/assets/audio/main.mp3"); // Ambient background music
         this.load.audio("walkSound", "/assets/audio/walk.mp3"); // Walking sound
         this.load.audio("jumpSound", "/assets/audio/jump.mp3"); // Jumping sound
         this.load.audio("spaceJumpSound", "/assets/audio/space_jump.mp3"); // Space jump sound
@@ -201,7 +201,7 @@
         // Create sound objects
         this.ambientMusic = this.sound.add("ambientMusic", {
           loop: true,
-          volume: 0.2,
+          volume: 0.02,
         });
         this.walkSound = this.sound.add("walkSound", {
           loop: true,
