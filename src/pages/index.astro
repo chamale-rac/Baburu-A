@@ -116,7 +116,7 @@
     <!-- Modal Popup -->
     <div class="modal" id="interactionModal">
       <div class="modal-content">
-        <h2>¡Bienvenido a Buburu!</h2>
+        <h2>¡Bienvenido a Baburu!</h2>
         <p>
           Haz clic en el botón de abajo para comenzar y habilitar los sonidos.
         </p>
@@ -126,9 +126,9 @@
 
     <!-- Main Content -->
     <div class="container">
-      <div>BUBURU</div>
+      <div>BABURU</div>
       <button class="menu-button" id="playButton">Iniciar Juego</button>
-      <button class="menu-button" id="settingButton">Settings</button>
+      <button class="menu-button" id="aboutButton">About Us</button>
       <button class="menu-button" id="closeButton">Exit</button>
     </div>
 
@@ -137,7 +137,7 @@
       document.addEventListener("DOMContentLoaded", function () {
         // Button references
         const playButton = document.getElementById("playButton");
-        const settingButton = document.getElementById("settingButton");
+        const aboutButton = document.getElementById("aboutButton");
         const closeButton = document.getElementById("closeButton");
         const startButton = document.getElementById("startButton");
         const interactionModal = document.getElementById("interactionModal");
@@ -146,10 +146,10 @@
         console.log("DOM fully loaded and parsed.");
 
         // Audio sources
-        const menu1SoundSrc = "/assets/audio/hover.mp3";
-        const menu2SoundSrc = "/assets/audio/hover.mp3";
-        const playSoundSrc = "/assets/audio/hover.mp3"; // Adjust if different
-        const ambientSoundSrc = "/assets/audio/main.mp3"; // Path to your ambient music file
+        const menu1SoundSrc = "/assets/audio/menu1.mp3";
+        const menu2SoundSrc = "/assets/audio/menu2.mp3";
+        const playSoundSrc = "/assets/audio/menu3.mp3"; // Adjust if different
+        const ambientSoundSrc = "/assets/audio/ambient.mp3"; // Path to your ambient music file
 
         // Initialize Audio objects
         const playAudio = new Audio(playSoundSrc);
@@ -160,8 +160,10 @@
 
         // Configure ambient music
         ambientAudio.loop = true;
-        ambientAudio.volume = 0.02; // Increased volume to 30%
-
+        ambientAudio.volume = 0.50; // Increased volume to 30%
+        hoverSound.volume = 0.70
+        hoverSound1.volume = 0.70
+        hoverSound2.volume = 0.70
         console.log("Audio objects initialized.");
 
         // Function to enable audio (called after user interaction)
@@ -263,7 +265,7 @@
 
         // Add hover sounds to buttons
         addHoverSound(playButton, hoverSound);
-        addHoverSound(settingButton, hoverSound2);
+        addHoverSound(aboutButton, hoverSound2);
         addHoverSound(closeButton, hoverSound1);
 
         // Optional: Add a click sound to the closeButton
