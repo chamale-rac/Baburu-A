@@ -3,85 +3,259 @@
 ---
 
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Menú Principal del Juego</title>
-    
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #000000;
-            color: #e9dddd;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-            font-size: 100px;
-        }
-        
-        
-        .menu-button {
-          display: block;
-          background-color: #ba44ff;
-          color: rgb(0, 0, 0);
-          padding: 15px;
-          font-size: 1.2rem;
-          text-decoration: none;
-          border-radius: 5px;
-          margin: 10px;
-          width: 100%; /* Make button responsive */
-          max-width: 300px; /* Set a max width */
-          min-width: 150px; /* Set a min width */
-          text-align: center;
-          transition: background-color 0.3s;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .menu-button:hover {
-            background-color: rgb(255, 255, 255);
-            
-        }
-        .menu-button:active {
-            background-color: rgb(255, 253, 253);
-        }
-        .menu-button:focus {
-            outline: none;
-        }
-        .button-letter {
-            color: #000000;
-            margin-bottom: 30px;   
-        }
-        .button-letter:hover{
-          
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #000000;
+        color: #e9dddd;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        flex-direction: column;
+        /* Adjusted font-size for better visibility */
+        font-size: 2rem;
+      }
+
+      .menu-button {
+        display: block;
+        background-color: #ba44ff;
+        color: rgb(0, 0, 0);
+        padding: 15px;
+        font-size: 1.2rem;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 10px;
+        width: 300px; /* Set a max width */
+        min-width: 150px; /* Set a min width */
+        text-align: center;
+        transition: background-color 0.3s;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .menu-button:hover {
+        background-color: rgb(255, 255, 255);
+      }
+      .menu-button:active {
+        background-color: rgb(255, 253, 253);
+      }
+      .menu-button:focus {
+        outline: none;
+      }
+      .button-letter {
+        color: #000000;
+        margin-bottom: 30px;
+      }
+
+      /* Modal Styles */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000; /* Ensure it stays on top */
+      }
+      .modal-content {
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        max-width: 80%;
+      }
+      .modal-content h2 {
+        margin-bottom: 20px;
+        color: #000000;
+        font-size: 2rem;
+      }
+      .modal-content p {
+        margin-bottom: 30px;
+        font-size: 1.2rem;
+        color: #333333;
+      }
+      .start-button {
+        background-color: #ba44ff;
+        color: #ffffff;
+        border: none;
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .start-button:hover {
+        background-color: #9b33e6;
+      }
+
+      /* Container Styles */
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        /* Adjusted height to account for modal */
+        height: 80vh;
+      }
     </style>
-</head>
+  </head>
   <body>
-    
+    <!-- Modal Popup -->
+    <div class="modal" id="interactionModal">
+      <div class="modal-content">
+        <h2>¡Bienvenido a Buburu!</h2>
+        <p>
+          Haz clic en el botón de abajo para comenzar y habilitar los sonidos.
+        </p>
+        <button class="start-button" id="startButton">Comenzar</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
     <div class="container">
-      BUBURU
-      <button class="menu-button" id="playButton" onclick="window.location.href = 'buburu'">Iniciar Juego</button>
-      <button class="menu-button" id="settingButton" onclick="window.location.href = 'buburu'">Settings</button>
+      <div>BUBURU</div>
+      <button class="menu-button" id="playButton">Iniciar Juego</button>
+      <button class="menu-button" id="settingButton">Settings</button>
       <button class="menu-button" id="closeButton">Exit</button>
     </div>
 
-    
-    <script src="../script.js"></script>
-  </body>
+    <!-- JavaScript -->
+    <script>
+      // Wait for the DOM to load
+      document.addEventListener("DOMContentLoaded", function () {
+        // Get references to buttons and modal
+        const playButton = document.getElementById("playButton");
+        const settingButton = document.getElementById("settingButton");
+        const closeButton = document.getElementById("closeButton");
+        const startButton = document.getElementById("startButton");
+        const interactionModal = document.getElementById("interactionModal");
 
-  <style>
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-  </style>
-  
+        console.log("DOM fully loaded and parsed.");
+
+        // Define audio files
+        const menu1SoundSrc = "/assets/audio/menu1.mp3";
+        const menu2SoundSrc = "/assets/audio/menu2.mp3";
+        const playSoundSrc = "/assets/audio/menu1.mp3"; // Adjust if different
+
+        // Initialize Audio objects but do not play yet
+        const playAudio = new Audio(playSoundSrc);
+        const hoverSound = new Audio(menu1SoundSrc);
+        const hoverSound2 = new Audio(menu1SoundSrc);
+        const hoverSound1 = new Audio(menu2SoundSrc);
+
+        console.log("Audio objects initialized.");
+
+        // Function to enable audio (called after user interaction)
+        function enableAudio() {
+          console.log("Enabling audio by preloading.");
+          // Play and immediately pause each audio to unlock it
+          [playAudio, hoverSound, hoverSound2, hoverSound1].forEach(
+            (audio, index) => {
+              audio
+                .play()
+                .then(() => {
+                  console.log(`Audio ${index + 1} played and paused.`);
+                  audio.pause();
+                  audio.currentTime = 0;
+                })
+                .catch((error) => {
+                  console.error(`Error preloading audio ${index + 1}:`, error);
+                });
+            }
+          );
+        }
+
+        // Show modal and wait for user to click 'Start'
+        startButton.addEventListener("click", function () {
+          console.log("'Comenzar' button clicked.");
+          enableAudio();
+          interactionModal.style.display = "none"; // Hide modal
+          console.log("Modal hidden.");
+        });
+
+        // Play sound on playButton click and navigate
+        playButton.addEventListener("click", function () {
+          console.log("'Iniciar Juego' button clicked.");
+          playAudio.currentTime = 0; // Reset to start
+          playAudio
+            .play()
+            .then(() => {
+              console.log("'Iniciar Juego' audio playing.");
+            })
+            .catch((error) => {
+              console.error("Error playing playAudio:", error);
+            });
+          // Delay navigation to allow sound to play
+          setTimeout(() => {
+            console.log("Navigating to 'buburu'.");
+            window.location.href = "buburu"; // Ensure this path is correct
+          }, 1000); // Increased delay to 1 second for better audio playback
+        });
+
+        // Function to add hover sound to a button
+        function addHoverSound(button, audio) {
+          button.addEventListener("mouseenter", function () {
+            console.log(`Mouse entered ${button.id}`);
+            audio.currentTime = 0; // Reset to start
+            audio
+              .play()
+              .then(() => {
+                console.log(`Hover sound for ${button.id} playing.`);
+              })
+              .catch((error) => {
+                console.error(
+                  `Error playing hoverSound for ${button.id}:`,
+                  error
+                );
+              });
+          });
+
+          button.addEventListener("mouseleave", function () {
+            console.log(`Mouse left ${button.id}`);
+            audio.pause();
+            audio.currentTime = 0;
+          });
+        }
+
+        // Add hover sounds to buttons
+        addHoverSound(playButton, hoverSound);
+        addHoverSound(settingButton, hoverSound2);
+        addHoverSound(closeButton, hoverSound1);
+
+        // Optional: Add a click sound to the closeButton
+        closeButton.addEventListener("click", function () {
+          console.log("'Exit' button clicked.");
+          hoverSound1.currentTime = 0;
+          hoverSound1
+            .play()
+            .then(() => {
+              console.log("'Exit' button sound playing.");
+            })
+            .catch((error) => {
+              console.error("Error playing hoverSound1 on close:", error);
+            });
+          // Add any exit logic here
+          // For example, close the window or navigate away
+          setTimeout(() => {
+            console.log("Attempting to close the window.");
+            window.close();
+            // If window.close() doesn't work, navigate to a different page or provide feedback
+            // For testing purposes, you can navigate to a different URL instead
+            // window.location.href = "https://www.example.com";
+          }, 1000); // Increased delay to 1 second for better audio playback
+        });
+      });
+    </script>
+  </body>
 </html>
