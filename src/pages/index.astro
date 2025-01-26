@@ -31,6 +31,7 @@
         padding: 15px;
         font-size: 1.2rem;
         text-decoration: none;
+        border: none; /* Changed to none for better styling */
         border-radius: 5px;
         margin: 10px;
         width: 300px; /* Set a max width */
@@ -40,6 +41,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        cursor: pointer; /* Change cursor to pointer */
       }
       .menu-button:hover {
         background-color: rgb(255, 255, 255);
@@ -124,20 +126,186 @@
 
     <!-- Main Content -->
     <div class="container">
-      BUBURU
-      <button
-        class="menu-button"
-        id="playButton"
-        onclick="window.location.href = 'buburu'">Iniciar Juego</button
-      >
-      <button
-        class="menu-button"
-        id="settingButton"
-        onclick="window.location.href = 'buburu'">Settings</button
-      >
+      <div>BUBURU</div>
+      <button class="menu-button" id="playButton">Iniciar Juego</button>
+      <button class="menu-button" id="settingButton">Settings</button>
       <button class="menu-button" id="closeButton">Exit</button>
     </div>
 
-    <script src="../script.js"></script>
+    <!-- JavaScript -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Button references
+        const playButton = document.getElementById("playButton");
+        const settingButton = document.getElementById("settingButton");
+        const closeButton = document.getElementById("closeButton");
+        const startButton = document.getElementById("startButton");
+        const interactionModal = document.getElementById("interactionModal");
+        const testAudioButton = document.getElementById("testAudioButton"); // Temporary test button
+
+        console.log("DOM fully loaded and parsed.");
+
+        // Audio sources
+        const menu1SoundSrc = "/assets/audio/menu1.mp3";
+        const menu2SoundSrc = "/assets/audio/menu2.mp3";
+        const playSoundSrc = "/assets/audio/menu1.mp3"; // Adjust if different
+        const ambientSoundSrc = "/assets/audio/main.mp3"; // Path to your ambient music file
+
+        // Initialize Audio objects
+        const playAudio = new Audio(playSoundSrc);
+        const hoverSound = new Audio(menu1SoundSrc);
+        const hoverSound2 = new Audio(menu1SoundSrc);
+        const hoverSound1 = new Audio(menu2SoundSrc);
+        const ambientAudio = new Audio(ambientSoundSrc); // Ambient music
+
+        // Configure ambient music
+        ambientAudio.loop = true;
+        ambientAudio.volume = 0.3; // Increased volume to 30%
+
+        console.log("Audio objects initialized.");
+
+        // Function to enable audio (called after user interaction)
+        function enableAudio() {
+          console.log("Enabling audio by preloading.");
+          [
+            playAudio,
+            hoverSound,
+            hoverSound2,
+            hoverSound1,
+            ambientAudio,
+          ].forEach((audio, index) => {
+            audio
+              .play()
+              .then(() => {
+                console.log(`Audio ${index + 1} played and paused.`);
+                audio.pause();
+                audio.currentTime = 0;
+              })
+              .catch((error) => {
+                console.error(`Error preloading audio ${index + 1}:`, error);
+              });
+          });
+        }
+
+        // Function to start ambient music
+        function startAmbientMusic() {
+          console.log("Attempting to start ambient music.");
+          ambientAudio
+            .play()
+            .then(() => {
+              console.log("Ambient music started successfully.");
+            })
+            .catch((error) => {
+              console.error("Error playing ambient music:", error);
+              alert(
+                "Failed to play background music. Please check your audio settings."
+              );
+            });
+        }
+
+        // Show modal and wait for user to click 'Start'
+        startButton.addEventListener("click", function () {
+          console.log("'Comenzar' button clicked.");
+          enableAudio();
+
+          // Start ambient music after 3 seconds
+          setTimeout(() => {
+            startAmbientMusic();
+          }, 500); // Delayed start to allow other sounds to play
+
+          interactionModal.style.display = "none"; // Hide modal
+          console.log("Modal hidden.");
+        });
+
+        // Play sound on playButton click and navigate
+        playButton.addEventListener("click", function () {
+          console.log("'Iniciar Juego' button clicked.");
+          playAudio.currentTime = 0; // Reset to start
+          playAudio
+            .play()
+            .then(() => {
+              console.log("'Iniciar Juego' audio playing.");
+            })
+            .catch((error) => {
+              console.error("Error playing playAudio:", error);
+            });
+          // Delay navigation to allow sound to play
+          setTimeout(() => {
+            console.log("Navigating to 'buburu'.");
+            window.location.href = "buburu"; // Ensure this path is correct
+          }, 1000); // Increased delay to 1 second for better audio playback
+        });
+
+        // Function to add hover sound to a button
+        function addHoverSound(button, audio) {
+          button.addEventListener("mouseenter", function () {
+            console.log(`Mouse entered ${button.id}`);
+            audio.currentTime = 0; // Reset to start
+            audio
+              .play()
+              .then(() => {
+                console.log(`Hover sound for ${button.id} playing.`);
+              })
+              .catch((error) => {
+                console.error(
+                  `Error playing hoverSound for ${button.id}:`,
+                  error
+                );
+              });
+          });
+
+          button.addEventListener("mouseleave", function () {
+            console.log(`Mouse left ${button.id}`);
+            audio.pause();
+            audio.currentTime = 0;
+          });
+        }
+
+        // Add hover sounds to buttons
+        addHoverSound(playButton, hoverSound);
+        addHoverSound(settingButton, hoverSound2);
+        addHoverSound(closeButton, hoverSound1);
+
+        // Optional: Add a click sound to the closeButton
+        closeButton.addEventListener("click", function () {
+          console.log("'Exit' button clicked.");
+          hoverSound1.currentTime = 0;
+          hoverSound1
+            .play()
+            .then(() => {
+              console.log("'Exit' button sound playing.");
+            })
+            .catch((error) => {
+              console.error("Error playing hoverSound1 on close:", error);
+            });
+          // Add any exit logic here
+          // For example, close the window or navigate away
+          setTimeout(() => {
+            console.log("Attempting to close the window.");
+            window.close();
+            // If window.close() doesn't work, navigate to a different page or provide feedback
+            // window.location.href = "https://www.example.com";
+          }, 1000); // Increased delay to 1 second for better audio playback
+        });
+
+        // Temporary Test Button for Ambient Audio
+        if (testAudioButton) {
+          testAudioButton.addEventListener("click", function () {
+            console.log("Test Ambient Audio button clicked.");
+            ambientAudio
+              .play()
+              .then(() => {
+                console.log("Ambient audio is playing.");
+              })
+              .catch((error) => {
+                console.error("Failed to play ambient audio:", error);
+                alert(
+                  "Failed to play ambient audio. Check console for details."
+                );
+              });
+          });
+        }
+      });
+    </script>
   </body>
 </html>
