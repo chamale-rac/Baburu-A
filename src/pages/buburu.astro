@@ -90,7 +90,7 @@
         default: "arcade",
         arcade: {
           gravity: { y: 500 }, // Initial gravity
-          debug: false, // Set to true for debugging physics bodies
+          debug: true, // Set to true for debugging physics bodies
         },
       },
       scene: {
@@ -148,10 +148,14 @@
         "/assets/images/hard_bubble_obstacle.png"
       );
 
-      this.load.spritesheet("character", "/assets/images/character.png", {
-        frameWidth: 32,
-        frameHeight: 43,
-      });
+      this.load.spritesheet(
+        "character",
+        "/assets/images/charactersecuence.png",
+        {
+          frameWidth: 32,
+          frameHeight: 43,
+        }
+      );
 
       // Load audio assets
       this.load.audio("ambientMusic", "/assets/audio/main.mp3"); // Ambient background music
@@ -184,6 +188,8 @@
       player = this.physics.add.sprite(300, 350, "character");
       player.setBounce(0);
       player.setCollideWorldBounds(true);
+      // Add to the player a rectangular collider
+      player.body.setSize(15, 30, true);
 
       createPlayerAnimations.call(this);
 
