@@ -47,7 +47,7 @@
           default: "arcade",
           arcade: {
             gravity: { y: 500 }, // Increased gravity for a more responsive jump
-            debug: false, // Set to true for debugging physics bodies
+            debug: true, // Set to true for debugging physics bodies
           },
         },
         scene: {
@@ -379,16 +379,20 @@
             platform.refreshBody();
 
             // Add some obstacles
-            if (Phaser.Math.Between(0, 6) == 1) {
+            if (Phaser.Math.Between(0, 6) === 1) {
               let easyBubbleObstacle = easyBubbleObstacles.create(
                 platform.x,
                 platform.y - 50,
                 "easyBubbleObstacle"
               );
               easyBubbleObstacle.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+
+              // Set circular physics body
+              easyBubbleObstacle.setCircle(easyBubbleObstacle.width / 2);
+              easyBubbleObstacle.body.setOffset(0, 0); // Center the circle
             }
 
-            if (Phaser.Math.Between(0, 10) == 1) {
+            if (Phaser.Math.Between(0, 10) === 1) {
               let hardBubbleObstacle = hardBubbleObstacles.create(
                 platform.x,
                 platform.y - 50,
@@ -400,7 +404,11 @@
                 Phaser.Math.Between(-200, 200),
                 20
               );
-              hardBubbleObstacle.allowGravity = false;
+              hardBubbleObstacle.body.allowGravity = false;
+
+              // Set circular physics body
+              hardBubbleObstacle.setCircle(hardBubbleObstacle.width / 2);
+              hardBubbleObstacle.body.setOffset(0, 0); // Center the circle
             }
           }
         }, this);
