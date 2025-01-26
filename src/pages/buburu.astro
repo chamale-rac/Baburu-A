@@ -71,10 +71,10 @@
       var gameOver = false;
 
       // Variables for Space Jump Cooldown
-      var spaceJumpCooldown = 5000; // 2 seconds cooldown
+      var spaceJumpCooldown = 5000; // 5 seconds cooldown
       var canJumpSpace = true;
       var cooldownTimer = 0;
-      var fallDownDistance = 900; // Player falls below this point, game over
+      var fallDownDistance = 1500; // Player falls below this point, game over
 
       // Key for resetting the game
       var resetKey;
@@ -85,6 +85,7 @@
       var game = new Phaser.Game(config);
 
       function preload() {
+        // Load images and sprites
         this.load.image("background", "/assets/images/background.png");
         this.load.image(
           "unitBubbleGround",
@@ -103,6 +104,15 @@
           frameWidth: 32,
           frameHeight: 43,
         });
+
+        // Load audio assets
+        this.load.audio("ambientMusic", "/assets/audio/ambient_music.mp3"); // Ambient background music
+        this.load.audio("walkSound", "/assets/audio/walk.mp3"); // Walking sound
+        this.load.audio("jumpSound", "/assets/audio/jump.mp3"); // Jumping sound
+        this.load.audio("spaceJumpSound", "/assets/audio/space_jump.mp3"); // Space jump sound
+        this.load.audio("downPressSound", "/assets/audio/down_press.mp3"); // Pressing down sound
+        this.load.audio("collisionSound", "/assets/audio/bubble_collision.mp3"); // Bubble collision sound
+        this.load.audio("gameOverSound", "/assets/audio/game_over.mp3"); // Game over sound
       }
 
       function create() {
@@ -180,6 +190,24 @@
         camera.setBounds(0, -10000, 800, 20000);
 
         this.physics.world.setBounds(0, -10000, 800, 200000);
+
+        // Create sound objects
+        this.ambientMusic = this.sound.add("ambientMusic", {
+          loop: true,
+          volume: 0.2,
+        });
+        this.walkSound = this.sound.add("walkSound", {
+          loop: true,
+          volume: 0.5,
+        });
+        this.jumpSound = this.sound.add("jumpSound", { volume: 0.7 });
+        this.spaceJumpSound = this.sound.add("spaceJumpSound", { volume: 0.7 });
+        this.downPressSound = this.sound.add("downPressSound", { volume: 0.5 });
+        this.collisionSound = this.sound.add("collisionSound", { volume: 0.5 });
+        this.gameOverSound = this.sound.add("gameOverSound", { volume: 1 });
+
+        // Play ambient music
+        this.ambientMusic.play();
       }
 
       function update(time, delta) {
@@ -248,6 +276,7 @@
           if (playerBottom <= platformTop) {
             if (!platform.hasCollided) {
               platform.hasCollided = true;
+              this.collisionSound.play(); // Play collision sound
               startBubbleExplosion.call(this, platform);
             }
             return true;
@@ -277,25 +306,44 @@
         if (cursors.left.isDown) {
           player.setVelocityX(-160);
           player.anims.play("left", true);
+
+          if (!this.walkSound.isPlaying) {
+            this.walkSound.play();
+          }
         } else if (cursors.right.isDown) {
           player.setVelocityX(160);
           player.anims.play("right", true);
+
+          if (!this.walkSound.isPlaying) {
+            this.walkSound.play();
+          }
         } else {
           player.setVelocityX(0);
           player.anims.play("turn", true);
+
+          if (this.walkSound.isPlaying) {
+            this.walkSound.stop();
+          }
         }
 
         if (cursors.up.isDown && player.body.touching.down) {
           player.setVelocityY(-650); // Adjusted jump value
+          this.jumpSound.play(); // Play jump sound
         }
 
         // Allow to go down faster
         if (cursors.down.isDown) {
           player.setVelocityY(500);
+          if (!this.downPressSound.isPlaying) {
+            this.downPressSound.play();
+          }
+        } else {
+          if (this.downPressSound.isPlaying) {
+            this.downPressSound.stop();
+          }
         }
 
         // Space bar jump with cooldown
-
         if (
           cursors.space.isDown &&
           !player.body.touching.space &&
@@ -303,6 +351,7 @@
           canJumpSpace
         ) {
           player.setVelocityY(-550); // Adjusted jump value
+          this.spaceJumpSound.play(); // Play space jump sound
           canJumpSpace = false;
           cooldownTimer = spaceJumpCooldown;
           updateCooldownText.call(this);
@@ -362,8 +411,9 @@
       }
 
       function hitObstacle(player, obstacle) {
+        this.collisionSound.play(); // Play collision sound
+
         this.physics.pause();
-        // Red tint instead of white
         player.setTint(0xff0000);
         player.anims.play("turn", true);
         gameOver = true;
@@ -374,11 +424,19 @@
             fill: "#fff",
           })
           .setOrigin(0.5);
+
+        // Stop ambient music
+        this.ambientMusic.stop();
+
+        // Play game over sound
+        this.gameOverSound.play();
       }
 
       // New Function: Check if player has fallen below y = 1500
       function checkFallOutOfBounds(delta) {
         if (player.y > fallDownDistance && !gameOver) {
+          this.collisionSound.play(); // Play collision sound
+
           this.physics.pause();
           player.setTint(0xff0000);
           player.anims.play("turn", true);
@@ -390,6 +448,12 @@
               fill: "#fff",
             })
             .setOrigin(0.5);
+
+          // Stop ambient music
+          this.ambientMusic.stop();
+
+          // Play game over sound
+          this.gameOverSound.play();
         }
       }
 
@@ -421,7 +485,18 @@
       function handleGameOver() {
         // Listen for 'R' key to reset the game
         if (Phaser.Input.Keyboard.JustDown(resetKey)) {
-          // Reload the page or restart the scene
+          // Stop all sounds
+          this.walkSound.stop();
+          this.jumpSound.stop();
+          this.spaceJumpSound.stop();
+          this.downPressSound.stop();
+          this.collisionSound.stop();
+          this.gameOverSound.stop();
+
+          // Restart ambient music
+          this.ambientMusic.play();
+
+          // Reload the scene
           this.scene.restart();
           gameOver = false;
           score = 0;
