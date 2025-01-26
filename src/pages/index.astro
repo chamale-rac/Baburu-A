@@ -29,7 +29,7 @@
         background-color: #ba44ff;
         color: rgb(0, 0, 0);
         padding: 15px;
-        font-size: 1.2rem;
+        font-size: 1.5rem;
         text-decoration: none;
         border: none; /* Changed to none for better styling */
         border-radius: 5px;
@@ -42,6 +42,8 @@
         overflow: hidden;
         text-overflow: ellipsis;
         cursor: pointer; /* Change cursor to pointer */
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        box-shadow: 2px 2px 5px rgba(255, 255, 255, 0.7);
       }
       .menu-button:hover {
         background-color: rgb(255, 255, 255);
@@ -76,6 +78,7 @@
         border-radius: 10px;
         text-align: center;
         max-width: 80%;
+        
       }
       .modal-content h2 {
         margin-bottom: 20px;
@@ -96,6 +99,8 @@
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
       }
       .start-button:hover {
         background-color: #9b33e6;
@@ -235,6 +240,23 @@
           setTimeout(() => {
             console.log("Navigating to 'buburu'.");
             window.location.href = "buburu"; // Ensure this path is correct
+          }, 1000); // Increased delay to 1 second for better audio playback
+        });
+        aboutButton.addEventListener("click", function () {
+          console.log("'Iniciar Juego' button clicked.");
+          playAudio.currentTime = 0; // Reset to start
+          playAudio
+            .play()
+            .then(() => {
+              console.log("'Iniciar Juego' audio playing.");
+            })
+            .catch((error) => {
+              console.error("Error playing playAudio:", error);
+            });
+          // Delay navigation to allow sound to play
+          setTimeout(() => {
+            console.log("Navigating to 'buburu'.");
+            window.location.href = "about"; // Ensure this path is correct
           }, 1000); // Increased delay to 1 second for better audio playback
         });
 
