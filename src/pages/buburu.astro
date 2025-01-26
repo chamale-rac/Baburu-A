@@ -20,6 +20,7 @@
         justify-content: center;
         display: flex;
         height: 100vh;
+        flex-direction: column-reverse;
       }
     </style>
   </head>
@@ -88,12 +89,12 @@
 
         platforms = this.physics.add.staticGroup();
 
-        startPointGround = platforms.create(400, 580, "unitBubbleGround");
+        startPointGround = platforms.create(300, 480, "unitBubbleGround");
         startPointGround.hasCollided = false;
 
         generateInitialPlatforms.call(this);
 
-        player = this.physics.add.sprite(400, 450, "character");
+        player = this.physics.add.sprite(300, 350, "character");
         player.setBounce(0.2);
         player.setCollideWorldBounds(true);
 
@@ -104,7 +105,7 @@
         hardBubbleObstacles = this.physics.add.group();
 
         scoreText = this.add
-          .text(16, 16, "Height: 0", { fontSize: "32px", fill: "#fff" })
+          .text(16, 16, "Height: 0", { fontSize: "20px", fill: "#fff" })
           .setScrollFactor(0)
           .setDepth(10);
 
@@ -247,7 +248,12 @@
         }
 
         if (cursors.up.isDown && player.body.touching.down) {
-          player.setVelocityY(-550); // TODO: adjust this value for a better jump
+          player.setVelocityY(-650); // TODO: adjust this value for a better jump
+        }
+
+        // Allow to go down faster
+        if (cursors.down.isDown) {
+          player.setVelocityY(500);
         }
 
         if (
@@ -324,5 +330,11 @@
           .setOrigin(0.5);
       }
     </script>
+    <div>
+      <ul>
+        <li>AWSD - Move</li>
+        <li>Space - Jump</li>
+      </ul>
+    </div>
   </body>
 </html>
