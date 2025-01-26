@@ -21,11 +21,21 @@
         display: flex;
         height: 100vh;
         flex-direction: column-reverse;
+        color: black;
       }
     </style>
   </head>
 
   <body>
+    <div id="instructions">
+      <ul>
+        <li>Arrows - Move</li>
+        <li>Space - Special Jump</li>
+      </ul>
+    </div>
+    <div id="cooldown">Space Jump Cooldown: Ready</div>
+    <div id="resetText">Press 'R' to Restart</div>
+
     <script type="text/javascript">
       var config = {
         type: Phaser.CANVAS,
@@ -57,6 +67,15 @@
       var highestPoint = 0;
       var gameOver = false;
 
+      // Variables for Space Jump Cooldown
+      var spaceJumpCooldown = 5000; // 2 seconds cooldown
+      var canJumpSpace = true;
+      var cooldownTimer = 0;
+      var fallDownDistance = 900; // Player falls below this point, game over
+
+      // Key for resetting the game
+      var resetKey;
+
       const platformsAmount = 20;
       const initialPoint = 450;
 
@@ -84,9 +103,11 @@
       }
 
       function create() {
+        // Background
         this.sky = this.add.tileSprite(400, 300, 800, 600, "background");
         this.sky.setScrollFactor(0);
 
+        // Platforms
         platforms = this.physics.add.staticGroup();
 
         startPointGround = platforms.create(300, 480, "unitBubbleGround");
@@ -94,16 +115,23 @@
 
         generateInitialPlatforms.call(this);
 
+        // Player
         player = this.physics.add.sprite(300, 350, "character");
         player.setBounce(0.2);
         player.setCollideWorldBounds(true);
 
         createPlayerAnimations.call(this);
 
+        // Input
         cursors = this.input.keyboard.createCursorKeys();
+        // Add 'R' key for reset
+        resetKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+
+        // Obstacles
         easyBubbleObstacles = this.physics.add.group();
         hardBubbleObstacles = this.physics.add.group();
 
+        // Score Text
         scoreText = this.add
           .text(16, 16, "Height: 0", { fontSize: "20px", fill: "#fff" })
           .setScrollFactor(0)
@@ -143,15 +171,14 @@
         this.physics.world.setBounds(0, -10000, 800, 200000);
       }
 
-      function update() {
-        if (gameOver) {
-          return;
-        }
-
+      function update(time, delta) {
         handlePlayerMovement.call(this);
         updateScore.call(this);
         generatePlatforms.call(this);
         cleanupObjects.call(this);
+        checkFallOutOfBounds.call(this, delta);
+        handleSpaceJumpCooldown.call(this, delta);
+        handleGameOver.call(this);
 
         this.sky.tilePositionY = camera.scrollY * 0.5;
       }
@@ -248,7 +275,7 @@
         }
 
         if (cursors.up.isDown && player.body.touching.down) {
-          player.setVelocityY(-650); // TODO: adjust this value for a better jump
+          player.setVelocityY(-650); // Adjusted jump value
         }
 
         // Allow to go down faster
@@ -256,12 +283,18 @@
           player.setVelocityY(500);
         }
 
+        // Space bar jump with cooldown
+
         if (
           cursors.space.isDown &&
           !player.body.touching.space &&
-          player.body.velocity.y > 0
+          player.body.velocity.y > 0 &&
+          canJumpSpace
         ) {
-          player.setVelocityY(-550); // TODO: add an interval to avoid multiple jumps
+          player.setVelocityY(-550); // Adjusted jump value
+          canJumpSpace = false;
+          cooldownTimer = spaceJumpCooldown;
+          updateCooldownText.call(this);
         }
       }
 
@@ -313,11 +346,13 @@
         }, this);
       }
 
-      function cleanupObjects() {}
+      function cleanupObjects() {
+        // Implement if you have objects to clean up
+      }
 
       function hitObstacle(player, obstacle) {
         this.physics.pause();
-        // White tint
+        // Red tint instead of white
         player.setTint(0xff0000);
         player.anims.play("turn", true);
         gameOver = true;
@@ -328,13 +363,72 @@
             fill: "#fff",
           })
           .setOrigin(0.5);
+
+        // Show reset instructions
+        document.getElementById("resetText").style.display = "block";
+      }
+
+      // New Function: Check if player has fallen below y = 1500
+      function checkFallOutOfBounds(delta) {
+        if (player.y > fallDownDistance && !gameOver) {
+          this.physics.pause();
+          player.setTint(0xff0000);
+          player.anims.play("turn", true);
+          gameOver = true;
+
+          this.add
+            .text(camera.scrollX + 400, camera.scrollY + 300, "Game Over", {
+              fontSize: "64px",
+              fill: "#fff",
+            })
+            .setOrigin(0.5);
+
+          // Show reset instructions
+          document.getElementById("resetText").style.display = "block";
+        }
+      }
+
+      // New Function: Handle Space Jump Cooldown
+      function handleSpaceJumpCooldown(delta) {
+        if (!canJumpSpace) {
+          cooldownTimer -= delta;
+          if (cooldownTimer <= 0) {
+            canJumpSpace = true;
+            cooldownTimer = 0;
+            updateCooldownText.call(this);
+          } else {
+            updateCooldownText.call(this);
+          }
+        }
+      }
+
+      // New Function: Update Cooldown Text
+      function updateCooldownText() {
+        const cooldownDiv = document.getElementById("cooldown");
+        if (canJumpSpace) {
+          cooldownDiv.textContent = "Space Jump Cooldown: Ready";
+        } else {
+          let remaining = (cooldownTimer / 1000).toFixed(1);
+          cooldownDiv.textContent = `Space Jump Cooldown: ${remaining}s`;
+        }
+      }
+
+      // New Function: Handle Game Over and Reset
+      function handleGameOver() {
+        // Listen for 'R' key to reset the game
+        if (Phaser.Input.Keyboard.JustDown(resetKey)) {
+          // Reload the page or restart the scene
+          this.scene.restart();
+          gameOver = false;
+          score = 0;
+          highestPoint = 0;
+          document.getElementById("resetText").style.display = "none";
+          document.getElementById("cooldown").textContent =
+            "Space Jump Cooldown: Ready";
+          canJumpSpace = true;
+          cooldownTimer = 0;
+        }
       }
     </script>
-    <div>
-      <ul>
-        <li>AWSD - Move</li>
-        <li>Space - Jump</li>
-      </ul>
-    </div>
   </body>
 </html>
