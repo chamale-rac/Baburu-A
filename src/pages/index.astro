@@ -124,138 +124,20 @@
 
     <!-- Main Content -->
     <div class="container">
-      <div>BUBURU</div>
-      <button class="menu-button" id="playButton">Iniciar Juego</button>
-      <button class="menu-button" id="settingButton">Settings</button>
+      BUBURU
+      <button
+        class="menu-button"
+        id="playButton"
+        onclick="window.location.href = 'buburu'">Iniciar Juego</button
+      >
+      <button
+        class="menu-button"
+        id="settingButton"
+        onclick="window.location.href = 'buburu'">Settings</button
+      >
       <button class="menu-button" id="closeButton">Exit</button>
     </div>
 
-    <!-- JavaScript -->
-    <script>
-      // Wait for the DOM to load
-      document.addEventListener("DOMContentLoaded", function () {
-        // Get references to buttons and modal
-        const playButton = document.getElementById("playButton");
-        const settingButton = document.getElementById("settingButton");
-        const closeButton = document.getElementById("closeButton");
-        const startButton = document.getElementById("startButton");
-        const interactionModal = document.getElementById("interactionModal");
-
-        console.log("DOM fully loaded and parsed.");
-
-        // Define audio files
-        const menu1SoundSrc = "/assets/audio/menu1.mp3";
-        const menu2SoundSrc = "/assets/audio/menu2.mp3";
-        const playSoundSrc = "/assets/audio/menu1.mp3"; // Adjust if different
-
-        // Initialize Audio objects but do not play yet
-        const playAudio = new Audio(playSoundSrc);
-        const hoverSound = new Audio(menu1SoundSrc);
-        const hoverSound2 = new Audio(menu1SoundSrc);
-        const hoverSound1 = new Audio(menu2SoundSrc);
-
-        console.log("Audio objects initialized.");
-
-        // Function to enable audio (called after user interaction)
-        function enableAudio() {
-          console.log("Enabling audio by preloading.");
-          // Play and immediately pause each audio to unlock it
-          [playAudio, hoverSound, hoverSound2, hoverSound1].forEach(
-            (audio, index) => {
-              audio
-                .play()
-                .then(() => {
-                  console.log(`Audio ${index + 1} played and paused.`);
-                  audio.pause();
-                  audio.currentTime = 0;
-                })
-                .catch((error) => {
-                  console.error(`Error preloading audio ${index + 1}:`, error);
-                });
-            }
-          );
-        }
-
-        // Show modal and wait for user to click 'Start'
-        startButton.addEventListener("click", function () {
-          console.log("'Comenzar' button clicked.");
-          enableAudio();
-          interactionModal.style.display = "none"; // Hide modal
-          console.log("Modal hidden.");
-        });
-
-        // Play sound on playButton click and navigate
-        playButton.addEventListener("click", function () {
-          console.log("'Iniciar Juego' button clicked.");
-          playAudio.currentTime = 0; // Reset to start
-          playAudio
-            .play()
-            .then(() => {
-              console.log("'Iniciar Juego' audio playing.");
-            })
-            .catch((error) => {
-              console.error("Error playing playAudio:", error);
-            });
-          // Delay navigation to allow sound to play
-          setTimeout(() => {
-            console.log("Navigating to 'buburu'.");
-            window.location.href = "buburu"; // Ensure this path is correct
-          }, 1000); // Increased delay to 1 second for better audio playback
-        });
-
-        // Function to add hover sound to a button
-        function addHoverSound(button, audio) {
-          button.addEventListener("mouseenter", function () {
-            console.log(`Mouse entered ${button.id}`);
-            audio.currentTime = 0; // Reset to start
-            audio
-              .play()
-              .then(() => {
-                console.log(`Hover sound for ${button.id} playing.`);
-              })
-              .catch((error) => {
-                console.error(
-                  `Error playing hoverSound for ${button.id}:`,
-                  error
-                );
-              });
-          });
-
-          button.addEventListener("mouseleave", function () {
-            console.log(`Mouse left ${button.id}`);
-            audio.pause();
-            audio.currentTime = 0;
-          });
-        }
-
-        // Add hover sounds to buttons
-        addHoverSound(playButton, hoverSound);
-        addHoverSound(settingButton, hoverSound2);
-        addHoverSound(closeButton, hoverSound1);
-
-        // Optional: Add a click sound to the closeButton
-        closeButton.addEventListener("click", function () {
-          console.log("'Exit' button clicked.");
-          hoverSound1.currentTime = 0;
-          hoverSound1
-            .play()
-            .then(() => {
-              console.log("'Exit' button sound playing.");
-            })
-            .catch((error) => {
-              console.error("Error playing hoverSound1 on close:", error);
-            });
-          // Add any exit logic here
-          // For example, close the window or navigate away
-          setTimeout(() => {
-            console.log("Attempting to close the window.");
-            window.close();
-            // If window.close() doesn't work, navigate to a different page or provide feedback
-            // For testing purposes, you can navigate to a different URL instead
-            // window.location.href = "https://www.example.com";
-          }, 1000); // Increased delay to 1 second for better audio playback
-        });
-      });
-    </script>
+    <script src="../script.js"></script>
   </body>
 </html>
