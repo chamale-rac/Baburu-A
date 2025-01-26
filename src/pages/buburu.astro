@@ -46,7 +46,7 @@
         physics: {
           default: "arcade",
           arcade: {
-            gravity: { y: 500 }, // Increased gravity for a more responsive jump
+            gravity: { y: 500 }, // Initial gravity
             debug: true, // Set to true for debugging physics bodies
           },
         },
@@ -82,15 +82,16 @@
       const platformsAmount = 20;
       const initialPoint = 450;
 
+      // Milestone and Difficulty Variables
+      var currentMilestone = 10000; // First milestone at 10,000
+      var difficultyLevel = 1; // Initial difficulty level
+
       var game = new Phaser.Game(config);
 
       function preload() {
         // Load images and sprites
         this.load.image("background", "/assets/images/Fondo00.png");
-        this.load.image(
-          "unitBubbleGround",
-          "/assets/images/unit_bubble_ground.png"
-        );
+        this.load.image("unitBubbleGround", "/assets/images/plataforma01.png");
         this.load.image(
           "easyBubbleObstacle",
           "/assets/images/easy_bubble_obstacle.png"
@@ -116,22 +117,14 @@
       }
 
       function create() {
-        // Background
-        const scale = width / 1920; // 800 / 1920 ≈ 0.4167
-
-        // Add the background image
-        this.sky = this.add
-          .image(width / 2, height, "background")
-          .setOrigin(0.5, 0.8) // Set origin to bottom center
-          .setScale(scale); // Scale to fit width
-
-        // Ensure the background scrolls with the camera
-        this.sky.setScrollFactor(1);
+        // Background as tileSprite
+        this.sky = this.add.tileSprite(400, 300, width, height, "background");
+        this.sky.setScrollFactor(0);
 
         // Platforms
         platforms = this.physics.add.staticGroup();
 
-        startPointGround = platforms.create(300, 480, "unitBubbleGround");
+        let startPointGround = platforms.create(300, 480, "unitBubbleGround");
         startPointGround.hasCollided = false;
 
         generateInitialPlatforms.call(this);
@@ -145,6 +138,9 @@
 
         // Input
         cursors = this.input.keyboard.createCursorKeys();
+        cursors.space = this.input.keyboard.addKey(
+          Phaser.Input.Keyboard.KeyCodes.SPACE
+        );
         // Add 'R' key for reset
         resetKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
@@ -159,8 +155,8 @@
           .setDepth(10);
 
         jumpText = this.add
-          .text(height / 2 + 25, width / 2 + 150, "Jump Ready", {
-            fontSize: "30px",
+          .text(16, 40, "Jump Ready", {
+            fontSize: "20px",
             fill: "#fff",
           })
           .setScrollFactor(0)
@@ -195,9 +191,9 @@
         // Camera
         camera = this.cameras.main;
         camera.startFollow(player, true, 0.05, 0.05);
-        camera.setBounds(0, -10000, 800, 20000);
+        camera.setBounds(0, -Infinity, 800, Infinity); // Allow infinite vertical scrolling
 
-        this.physics.world.setBounds(0, -10000, 800, 200000);
+        this.physics.world.setBounds(0, -Infinity, 800, Infinity); // Allow infinite vertical physics
 
         // Create sound objects
         this.ambientMusic = this.sound.add("ambientMusic", {
@@ -206,12 +202,12 @@
         });
         this.walkSound = this.sound.add("walkSound", {
           loop: true,
-          volume: 0.5,
+          volume: 0.25,
         });
-        this.jumpSound = this.sound.add("jumpSound", { volume: 0.3 });
+        this.jumpSound = this.sound.add("jumpSound", { volume: 0.2 });
         this.spaceJumpSound = this.sound.add("spaceJumpSound", { volume: 0.3 });
         this.downPressSound = this.sound.add("downPressSound", { volume: 0.5 });
-        this.collisionSound = this.sound.add("collisionSound", { volume: 0.5 });
+        this.collisionSound = this.sound.add("collisionSound", { volume: 0.3 });
         this.gameOverSound = this.sound.add("gameOverSound", { volume: 1 });
 
         // Play ambient music
@@ -227,7 +223,8 @@
         handleSpaceJumpCooldown.call(this, delta);
         handleGameOver.call(this);
 
-        this.sky.tilePositionY = camera.scrollY * 0.5;
+        // Update background
+        this.sky.tilePositionY = this.cameras.main.scrollY * 0.5;
       }
 
       /* -------------------------------- FUNCTIONS ------------------------------- */
@@ -342,23 +339,21 @@
         // Allow to go down faster
         if (cursors.down.isDown) {
           player.setVelocityY(500);
-          if (!this.downPressSound.isPlaying) {
-            this.downPressSound.play();
-          }
-        } else {
-          if (this.downPressSound.isPlaying) {
-            this.downPressSound.stop();
-          }
+          this.downPressSound.play();
         }
 
         // Space bar jump with cooldown
         if (
           cursors.space.isDown &&
           !player.body.touching.space &&
-          player.body.velocity.y > 0 &&
+          //   player.body.velocity.y > 0 &&
           canJumpSpace
         ) {
-          player.setVelocityY(-550); // Adjusted jump value
+          if (player.body.velocity.y < 0) {
+            player.setVelocityY(player.body.velocity.y - 550); // Adjusted jump value
+          } else {
+            player.setVelocityY(-550); // Adjusted jump value
+          }
           this.spaceJumpSound.play(); // Play space jump sound
           canJumpSpace = false;
           cooldownTimer = spaceJumpCooldown;
@@ -372,6 +367,12 @@
           score = Math.max(score, initialPoint - highestPoint);
           scoreTwoDecimal = score.toFixed(2);
           scoreText.setText("Height: " + scoreTwoDecimal);
+
+          // Check for milestone
+          if (score >= currentMilestone) {
+            handleMilestone.call(this);
+            currentMilestone += 10000; // Set next milestone
+          }
         }
       }
 
@@ -386,44 +387,69 @@
 
             platform.refreshBody();
 
-            // Add some obstacles
-            if (Phaser.Math.Between(0, 6) === 1) {
-              let easyBubbleObstacle = easyBubbleObstacles.create(
-                platform.x,
-                platform.y - 50,
-                "easyBubbleObstacle"
-              );
-              easyBubbleObstacle.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-
-              // Set circular physics body
-              easyBubbleObstacle.setCircle(easyBubbleObstacle.width / 2);
-              easyBubbleObstacle.body.setOffset(0, 0); // Center the circle
-            }
-
-            if (Phaser.Math.Between(0, 10) === 1) {
-              let hardBubbleObstacle = hardBubbleObstacles.create(
-                platform.x,
-                platform.y - 50,
-                "hardBubbleObstacle"
-              );
-              hardBubbleObstacle.setBounce(1);
-              hardBubbleObstacle.setCollideWorldBounds(true);
-              hardBubbleObstacle.setVelocity(
-                Phaser.Math.Between(-200, 200),
-                20
-              );
-              hardBubbleObstacle.body.allowGravity = false;
-
-              // Set circular physics body
-              hardBubbleObstacle.setCircle(hardBubbleObstacle.width / 2);
-              hardBubbleObstacle.body.setOffset(0, 0); // Center the circle
-            }
+            // Add obstacles based on difficulty
+            addObstacles.call(this, platform);
           }
         }, this);
       }
 
+      function addObstacles(platform) {
+        // Adjust obstacle spawn rates based on difficulty
+        let easyObstacleChance = Phaser.Math.Clamp(7 - difficultyLevel, 1, 10);
+        if (Phaser.Math.Between(0, easyObstacleChance) === easyObstacleChance) {
+          let easyBubbleObstacle = easyBubbleObstacles.create(
+            platform.x,
+            platform.y - 50,
+            "easyBubbleObstacle"
+          );
+          easyBubbleObstacle.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+          easyBubbleObstacle.setCircle(easyBubbleObstacle.width / 2);
+          easyBubbleObstacle.body.setOffset(0, 0);
+        }
+
+        let hardObstacleChance = Phaser.Math.Clamp(11 - difficultyLevel, 1, 15);
+        if (Phaser.Math.Between(0, hardObstacleChance) === hardObstacleChance) {
+          let hardBubbleObstacle = hardBubbleObstacles.create(
+            platform.x,
+            platform.y - 50,
+            "hardBubbleObstacle"
+          );
+          hardBubbleObstacle.setBounce(1);
+          hardBubbleObstacle.setCollideWorldBounds(true);
+          hardBubbleObstacle.setVelocity(
+            Phaser.Math.Between(
+              -200 - difficultyLevel * 20,
+              200 + difficultyLevel * 20
+            ),
+            20 + difficultyLevel * 10
+          );
+          hardBubbleObstacle.body.allowGravity = false;
+          hardBubbleObstacle.setCircle(hardBubbleObstacle.width / 2);
+          hardBubbleObstacle.body.setOffset(0, 0);
+        }
+      }
+
       function cleanupObjects() {
-        // Implement if you have objects to clean up
+        const currentCamera = this.cameras.main;
+
+        const cleanupGroup = (group, groupName) => {
+          group.children.iterate(function (obstacle) {
+            if (!obstacle) {
+              console.warn(`Undefined obstacle found in ${groupName} group.`);
+              return;
+            }
+
+            if (obstacle.y > currentCamera.scrollY + 1000) {
+              obstacle.destroy();
+              console.log(
+                `Destroyed obstacle in ${groupName} group at y=${obstacle.y}`
+              );
+            }
+          }, this);
+        };
+
+        cleanupGroup(easyBubbleObstacles, "easyBubbleObstacles");
+        cleanupGroup(hardBubbleObstacles, "hardBubbleObstacles");
       }
 
       function hitObstacle(player, obstacle) {
@@ -441,16 +467,13 @@
           })
           .setOrigin(0.5);
 
-        // Stop ambient music
-        this.ambientMusic.stop();
-
         // Play game over sound
         this.gameOverSound.play();
       }
 
-      // New Function: Check if player has fallen below y = 1500
       function checkFallOutOfBounds(delta) {
-        if (player.y > fallDownDistance && !gameOver) {
+        // Check the player is falling below the fallDownDistance, respect the highest point
+        if (player.y > highestPoint + fallDownDistance && !gameOver) {
           this.collisionSound.play(); // Play collision sound
 
           this.physics.pause();
@@ -464,9 +487,6 @@
               fill: "#fff",
             })
             .setOrigin(0.5);
-
-          // Stop ambient music
-          this.ambientMusic.stop();
 
           // Play game over sound
           this.gameOverSound.play();
@@ -497,6 +517,32 @@
         }
       }
 
+      // New Function: Handle Milestones and Difficulty Increase
+      function handleMilestone() {
+        // Increase difficulty
+        difficultyLevel += 1;
+        console.log(
+          "Milestone reached! Difficulty increased to " + difficultyLevel
+        );
+
+        // Example: Increase gravity for added challenge
+        this.physics.world.gravity.y += 50;
+
+        // Reposition all platforms above the current view
+        platforms.children.iterate(function (platform) {
+          platform.y = this.cameras.main.scrollY - Phaser.Math.Between(50, 150);
+          platform.x = Phaser.Math.Between(50, 750);
+          platform.hasCollided = false;
+          platform.refreshBody();
+        }, this);
+
+        // Clear existing obstacles
+        easyBubbleObstacles.clear(true, true);
+        hardBubbleObstacles.clear(true, true);
+
+        // Optionally, spawn new obstacles based on increased difficulty
+      }
+
       // New Function: Handle Game Over and Reset
       function handleGameOver() {
         // Listen for 'R' key to reset the game
@@ -508,18 +554,19 @@
           this.downPressSound.stop();
           this.collisionSound.stop();
           this.gameOverSound.stop();
-
-          // Restart ambient music
           this.ambientMusic.stop();
-          this.ambientMusic.play();
 
-          // Reload the scene
-          this.scene.restart();
+          // Reset variables
           gameOver = false;
           score = 0;
           highestPoint = 0;
           canJumpSpace = true;
           cooldownTimer = 0;
+          currentMilestone = 10000;
+          difficultyLevel = 1;
+
+          // Reload the scene
+          this.scene.restart();
         }
       }
     </script>
