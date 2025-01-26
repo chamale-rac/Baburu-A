@@ -92,6 +92,7 @@
         // Load images and sprites
         this.load.image("background", "/assets/images/Fondo00.png");
         this.load.image("unitBubbleGround", "/assets/images/plataforma01.png");
+        this.load.image("unitBubbleGround2", "/assets/images/plataforma02.png");
         this.load.image(
           "easyBubbleObstacle",
           "/assets/images/easy_bubble_obstacle.png"
@@ -125,6 +126,8 @@
         platforms = this.physics.add.staticGroup();
 
         let startPointGround = platforms.create(300, 480, "unitBubbleGround");
+        startPointGround.setScale(0.05);
+        startPointGround.refreshBody();
         startPointGround.hasCollided = false;
 
         generateInitialPlatforms.call(this);
@@ -155,8 +158,8 @@
           .setDepth(10);
 
         jumpText = this.add
-          .text(16, 40, "Jump Ready", {
-            fontSize: "20px",
+          .text(16, 40, "Extra Propulsion Ready", {
+            fontSize: "14px",
             fill: "#fff",
           })
           .setScrollFactor(0)
@@ -236,6 +239,8 @@
           let randomBubblesAmount = Phaser.Math.Between(2, 4);
           for (let j = 0; j < randomBubblesAmount; j++) {
             let bubble = platforms.create(x + j * 50, y, "unitBubbleGround");
+            bubble.setScale(0.05);
+            bubble.refreshBody();
             bubble.hasCollided = false;
           }
         }
@@ -510,10 +515,10 @@
       // New Function: Update Cooldown Text
       function updateCooldownText() {
         if (canJumpSpace) {
-          jumpText.setText("Jump Ready");
+          jumpText.setText("Extra Propulsion Ready");
         } else {
           let remaining = (cooldownTimer / 1000).toFixed(1);
-          jumpText.setText("Jump in: " + remaining + "s");
+          jumpText.setText("Extra Propulsion in: " + remaining + "s");
         }
       }
 
