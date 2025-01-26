@@ -48,7 +48,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         cursor: pointer; /* Change cursor to pointer */
-        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        
         box-shadow: 2px 2px 5px rgba(255, 255, 255, 0.7);
       }
       .menu-button:hover {
@@ -109,7 +109,7 @@
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s;
-        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        
         box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
       }
       .start-button:hover {
@@ -149,7 +149,7 @@
       <div class="title">BABURU</div>
       <button class="menu-button" id="playButton">Iniciar Juego</button>
       <button class="menu-button" id="aboutButton">About Us</button>
-      <button class="menu-button" id="closeButton">Exit</button>
+      <button class="menu-button" id="closeButton" >Exit</button>
     </div>
 
     <!-- JavaScript -->
@@ -313,18 +313,19 @@
             .play()
             .then(() => {
               console.log("'Exit' button sound playing.");
+              setTimeout(() => {
+            console.log("Attempting to close the window.");
+            window.close();
+            // If window.close() doesn't work, navigate to a different page or provide feedback
+            // window.location.href = "https://www.example.com";
+            }, 1000);
             })
             .catch((error) => {
               console.error("Error playing hoverSound1 on close:", error);
             });
           // Add any exit logic here
           // For example, close the window or navigate away
-          setTimeout(() => {
-            console.log("Attempting to close the window.");
-            window.close();
-            // If window.close() doesn't work, navigate to a different page or provide feedback
-            // window.location.href = "https://www.example.com";
-          }, 1000); // Increased delay to 1 second for better audio playback
+           // Increased delay to 1 second for better audio playback
         });
 
         // Temporary Test Button for Ambient Audio
