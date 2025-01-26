@@ -1,0 +1,319 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Making your first Phaser 3 Game - Part 10</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js" is:inline
+    ></script>
+    <style type="text/css">
+      body {
+        margin: 0;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        height: 100vh;
+      }
+    </style>
+  </head>
+
+  <body>
+    <script type="text/javascript">
+      var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: {
+          default: "arcade",
+          arcade: {
+            gravity: { y: 500 }, // Increased gravity for a more responsive jump
+            debug: false, // Set to true for debugging physics bodies
+          },
+        },
+        scene: {
+          preload: preload,
+          create: create,
+          update: update,
+        },
+      };
+
+      var player;
+      var platforms;
+      var cursors;
+      var easyBubbleObstacles;
+      var hardBubbleObstacles;
+      var camera;
+
+      var scoreText;
+      var score = 0;
+      var highestPoint = 0;
+      var gameOver = false;
+
+      const platformsAmount = 20;
+      const initialPoint = 450;
+
+      var game = new Phaser.Game(config);
+
+      function preload() {
+        this.load.image("background", "assets/images/background.png");
+        this.load.image(
+          "unitBubbleGround",
+          "assets/images/unit_bubble_ground.png"
+        );
+        this.load.image(
+          "easyBubbleObstacle",
+          "assets/images/easy_bubble_obstacle.png"
+        );
+        this.load.image(
+          "hardBubbleObstacle",
+          "assets/images/hard_bubble_obstacle.png"
+        );
+
+        this.load.spritesheet("character", "assets/images/character.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
+      }
+
+      function create() {
+        this.sky = this.add.tileSprite(400, 300, 800, 600, "background");
+        this.sky.setScrollFactor(0);
+
+        platforms = this.physics.add.staticGroup();
+
+        startPointGround = platforms.create(400, 580, "unitBubbleGround");
+        startPointGround.hasCollided = false;
+
+        generateInitialPlatforms.call(this);
+
+        player = this.physics.add.sprite(400, 450, "character");
+        player.setBounce(0.2);
+        player.setCollideWorldBounds(true);
+
+        createPlayerAnimations.call(this);
+
+        cursors = this.input.keyboard.createCursorKeys();
+        easyBubbleObstacles = this.physics.add.group();
+        hardBubbleObstacles = this.physics.add.group();
+
+        scoreText = this.add
+          .text(16, 16, "Height: 0", { fontSize: "32px", fill: "#fff" })
+          .setScrollFactor(0)
+          .setDepth(10);
+
+        // Colliders
+        this.physics.add.collider(
+          player,
+          platforms,
+          null,
+          platformCollision,
+          this
+        );
+        this.physics.add.collider(easyBubbleObstacles, platforms);
+        this.physics.add.collider(hardBubbleObstacles, platforms);
+
+        this.physics.add.collider(
+          player,
+          easyBubbleObstacles,
+          hitObstacle,
+          null,
+          this
+        );
+        this.physics.add.collider(
+          player,
+          hardBubbleObstacles,
+          hitObstacle,
+          null,
+          this
+        );
+
+        // Camera
+        camera = this.cameras.main;
+        camera.startFollow(player, true, 0.05, 0.05);
+        camera.setBounds(0, -10000, 800, 20000);
+
+        this.physics.world.setBounds(0, -10000, 800, 200000);
+      }
+
+      function update() {
+        if (gameOver) {
+          return;
+        }
+
+        handlePlayerMovement.call(this);
+        updateScore.call(this);
+        generatePlatforms.call(this);
+        cleanupObjects.call(this);
+
+        this.sky.tilePositionY = camera.scrollY * 0.5;
+      }
+
+      /* -------------------------------- FUNCTIONS ------------------------------- */
+      function generateInitialPlatforms() {
+        for (let i = 1; i < platformsAmount; i++) {
+          let x = Phaser.Math.Between(50, 750);
+          let y = 600 - i * 80;
+
+          let randomBubblesAmount = Phaser.Math.Between(2, 4);
+          for (let j = 0; j < randomBubblesAmount; j++) {
+            let bubble = platforms.create(x + j * 50, y, "unitBubbleGround");
+            bubble.hasCollided = false;
+          }
+        }
+      }
+
+      function createPlayerAnimations() {
+        this.anims.create({
+          key: "left",
+          frames: this.anims.generateFrameNumbers("character", {
+            start: 0,
+            end: 3,
+          }),
+          frameRate: 10,
+          repeat: -1,
+        });
+
+        this.anims.create({
+          key: "turn",
+          frames: [{ key: "character", frame: 4 }],
+          frameRate: 20,
+        });
+
+        this.anims.create({
+          key: "right",
+          frames: this.anims.generateFrameNumbers("character", {
+            start: 5,
+            end: 8,
+          }),
+          frameRate: 10,
+          repeat: -1,
+        });
+      }
+
+      function platformCollision(player, platform) {
+        const playerBody = player.body;
+        const platformBody = platform.body;
+
+        // Player is falling
+        if (playerBody.velocity.y > 0) {
+          const playerBottom = player.y + playerBody.height / 2;
+          const platformTop = platform.y - platformBody.height / 2;
+
+          if (playerBottom <= platformTop) {
+            if (!platform.hasCollided) {
+              platform.hasCollided = true;
+              startBubbleExplosion.call(this, platform);
+            }
+            return true;
+          }
+        }
+
+        // Prevent collision
+        return false;
+      }
+
+      function startBubbleExplosion(platform) {
+        this.time.delayedCall(
+          400,
+          () => {
+            explodeBubble.call(this, platform);
+          },
+          [],
+          this
+        );
+      }
+
+      function explodeBubble(platform) {
+        platform.destroy();
+      }
+
+      function handlePlayerMovement() {
+        if (cursors.left.isDown) {
+          player.setVelocityX(-160);
+          player.anims.play("left", true);
+        } else if (cursors.right.isDown) {
+          player.setVelocityX(160);
+          player.anims.play("right", true);
+        } else {
+          player.setVelocityX(0);
+          player.anims.play("turn");
+        }
+
+        if (cursors.up.isDown && player.body.touching.down) {
+          player.setVelocityY(-550); // TODO: adjust this value for a better jump
+        }
+
+        if (
+          cursors.space.isDown &&
+          !player.body.touching.space &&
+          player.body.velocity.y > 0
+        ) {
+          player.setVelocityY(-550); // TODO: add an interval to avoid multiple jumps
+        }
+      }
+
+      function updateScore() {
+        if (player.y < highestPoint || highestPoint === 0) {
+          highestPoint = player.y;
+          score = Math.max(score, initialPoint - highestPoint);
+          scoreTwoDecimal = score.toFixed(2);
+          scoreText.setText("Height: " + scoreTwoDecimal);
+        }
+      }
+
+      function generatePlatforms() {
+        platforms.children.iterate(function (platform) {
+          if (platform.y > camera.scrollY + 600) {
+            // Reposition the platform above the camera
+            platform.y = camera.scrollY - Phaser.Math.Between(50, 150);
+            platform.x = Phaser.Math.Between(50, 750);
+
+            platform.hasCollided = false;
+
+            platform.refreshBody();
+
+            // Add some obstacles
+            if (Phaser.Math.Between(0, 6) == 1) {
+              let easyBubbleObstacle = easyBubbleObstacles.create(
+                platform.x,
+                platform.y - 50,
+                "easyBubbleObstacle"
+              );
+              easyBubbleObstacle.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+            }
+
+            if (Phaser.Math.Between(0, 10) == 1) {
+              let hardBubbleObstacle = hardBubbleObstacles.create(
+                platform.x,
+                platform.y - 50,
+                "hardBubbleObstacle"
+              );
+              hardBubbleObstacle.setBounce(1);
+              hardBubbleObstacle.setCollideWorldBounds(true);
+              hardBubbleObstacle.setVelocity(
+                Phaser.Math.Between(-200, 200),
+                20
+              );
+              hardBubbleObstacle.allowGravity = false;
+            }
+          }
+        }, this);
+      }
+
+      function cleanupObjects() {}
+
+      function hitObstacle(player, obstacle) {
+        this.physics.pause();
+        // White tint
+        player.setTint(0xff0000);
+        player.anims.play("turn");
+        gameOver = true;
+
+        this.add
+          .text(camera.scrollX + 400, camera.scrollY + 300, "Game Over", {
+            fontSize: "64px",
+            fill: "#fff",
+          })
+          .setOrigin(0.5);
+      }
+    </script>
+  </body>
+</html>
