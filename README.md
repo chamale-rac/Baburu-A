@@ -1,47 +1,27 @@
-# Astro Starter Kit: Minimal
+# Baburu 🫧
 
-```sh
-npm create astro@latest -- --template minimal
+## About
+Game Overview
+You’re an astronaut who crashed on a strange planet. To get home, climb to the top using bubble platforms that gradually descend and burst after a short time. Reach the summit to find your way back to the station.
+
+## Hints & How-To
+- Keep moving: Each bubble pops quickly, so jump to the next one without delay.
+- Timing is key: Bubbles descend at different speeds—anticipate when to jump.
+- Plan your path: Look ahead and plot your moves to avoid dead ends.
+
+## Quick Playthrough
+1. Start at the bottom, jumping onto slow-descending bubbles to get a feel for the timing.
+2. As you ascend, bubbles might speed up or appear at tricky angles—stay alert.
+3. Once you reach the top platform, you’ll complete your escape and return to safety.
+
+## Execute it locally
+
+```
+npm install
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/minimal)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/minimal)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/minimal/devcontainer.json)
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```
+npm run preview
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+> You will need to have installed Node.js
