@@ -234,7 +234,7 @@
           player.anims.play("right", true);
         } else {
           player.setVelocityX(0);
-          player.anims.play("turn");
+          player.anims.play("turn", true);
         }
 
         if (cursors.up.isDown && player.body.touching.down) {
@@ -304,7 +304,7 @@
         this.physics.pause();
         // White tint
         player.setTint(0xff0000);
-        player.anims.play("turn");
+        player.anims.play("turn", true);
         gameOver = true;
 
         this.add
