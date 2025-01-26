@@ -12,452 +12,521 @@
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.86.0/phaser.min.js"
       is:inline></script>
+    <link rel="stylesheet" href="https://use.typekit.net/pxq7jvg.css" />
 
     <style type="text/css">
       body {
+        font-family: Arial, sans-serif;
         margin: 0;
         align-items: center;
         justify-content: center;
         display: flex;
         height: 100vh;
-        flex-direction: column-reverse;
+        flex-direction: column;
         color: black;
+        background: #000000;
+        color: #e9dddd;
+      }
+      .menu-button {
+        font-family: "wilko-highlight", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        display: block;
+        background-color: #ba44ff;
+        color: rgb(0, 0, 0);
+        padding: 15px;
+        font-size: 1.6rem;
+        text-decoration: none;
+        border: none; /* Changed to none for better styling */
+        border-radius: 5px;
+        margin: 10px;
+        max-width: 300px; /* Set a max width */
+        text-align: center;
+        transition: background-color 0.3s;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer; /* Change cursor to pointer */
+      }
+      .menu-button:hover {
+        background-color: rgb(255, 255, 255);
+      }
+      .menu-button:active {
+        background-color: rgb(255, 253, 253);
+      }
+      .menu-button:focus {
+        outline: none;
+      }
+      .container {
+        position: absolute;
+        top: 0;
+        left: 0;
       }
     </style>
   </head>
 
   <body>
-    <div id="instructions">
+    <div class="container">
+      <a href="/" class="menu-button">Home</a>
+    </div>
+  </body>
+  <!-- <div id="instructions">
       <ul>
         <li>Arrows (Up, Down, Left and Right) - Move</li>
         <li>Space - Extra Propulsion</li>
         <li>R - Restart</li>
       </ul>
-    </div>
+    </div> -->
 
-    <script type="text/javascript">
-      var width = 800;
-      var height = 600;
+  <script type="text/javascript">
+    var width = 800;
+    var height = 600;
 
-      var config = {
-        type: Phaser.CANVAS,
-        width: width,
-        height: height,
-        physics: {
-          default: "arcade",
-          arcade: {
-            gravity: { y: 500 }, // Initial gravity
-            debug: true, // Set to true for debugging physics bodies
-          },
+    var config = {
+      type: Phaser.CANVAS,
+      width: width,
+      height: height,
+      physics: {
+        default: "arcade",
+        arcade: {
+          gravity: { y: 500 }, // Initial gravity
+          debug: false, // Set to true for debugging physics bodies
         },
-        scene: {
-          preload: preload,
-          create: create,
-          update: update,
-        },
-      };
+      },
+      scene: {
+        preload: preload,
+        create: create,
+        update: update,
+      },
+      // scale: {
+      //   mode: Phaser.Scale.FIT,
+      //   // ...
+      // },
+    };
+    var player;
+    var platforms;
+    var cursors;
+    var easyBubbleObstacles;
+    var hardBubbleObstacles;
+    var camera;
 
-      var player;
-      var platforms;
-      var cursors;
-      var easyBubbleObstacles;
-      var hardBubbleObstacles;
-      var camera;
+    var scoreText;
+    var jumpText;
+    var score = 0;
+    var highestPoint = 0;
+    var gameOver = false;
 
-      var scoreText;
-      var jumpText;
-      var score = 0;
-      var highestPoint = 0;
-      var gameOver = false;
+    // Variables for Space Jump Cooldown
+    var spaceJumpCooldown = 5000; // 5 seconds cooldown
+    var canJumpSpace = true;
+    var cooldownTimer = 0;
+    var fallDownDistance = 1500; // Player falls below this point, game over
 
-      // Variables for Space Jump Cooldown
-      var spaceJumpCooldown = 5000; // 5 seconds cooldown
-      var canJumpSpace = true;
-      var cooldownTimer = 0;
-      var fallDownDistance = 1500; // Player falls below this point, game over
+    // Key for resetting the game
+    var resetKey;
 
-      // Key for resetting the game
-      var resetKey;
+    const platformsAmount = 20;
+    const initialPoint = 350;
 
-      const platformsAmount = 20;
-      const initialPoint = 450;
+    // Milestone and Difficulty Variables
+    var currentMilestone = 10000; // First milestone at 10,000
+    var difficultyLevel = 1; // Initial difficulty level
 
-      // Milestone and Difficulty Variables
-      var currentMilestone = 10000; // First milestone at 10,000
-      var difficultyLevel = 1; // Initial difficulty level
+    var game = new Phaser.Game(config);
+    this;
+    function preload() {
+      // Load images and sprites
+      this.load.image("background", "/assets/images/Fondo00.png");
+      this.load.image("unitBubbleGround", "/assets/images/plataforma01.png");
+      this.load.image("unitBubbleGround2", "/assets/images/plataforma02.png");
+      this.load.image(
+        "easyBubbleObstacle",
+        "/assets/images/easy_bubble_obstacle.png"
+      );
+      this.load.image(
+        "hardBubbleObstacle",
+        "/assets/images/hard_bubble_obstacle.png"
+      );
 
-      var game = new Phaser.Game(config);
+      this.load.spritesheet("character", "/assets/images/character.png", {
+        frameWidth: 32,
+        frameHeight: 43,
+      });
 
-      function preload() {
-        // Load images and sprites
-        this.load.image("background", "/assets/images/Fondo00.png");
-        this.load.image("unitBubbleGround", "/assets/images/plataforma01.png");
-        this.load.image("unitBubbleGround2", "/assets/images/plataforma02.png");
-        this.load.image(
-          "easyBubbleObstacle",
-          "/assets/images/easy_bubble_obstacle.png"
-        );
-        this.load.image(
-          "hardBubbleObstacle",
-          "/assets/images/hard_bubble_obstacle.png"
-        );
+      // Load audio assets
+      this.load.audio("ambientMusic", "/assets/audio/main.mp3"); // Ambient background music
+      this.load.audio("walkSound", "/assets/audio/walk.mp3"); // Walking sound
+      this.load.audio("jumpSound", "/assets/audio/jump.mp3"); // Jumping sound
+      this.load.audio("spaceJumpSound", "/assets/audio/space_jump.mp3"); // Space jump sound
+      this.load.audio("downPressSound", "/assets/audio/down_press.mp3"); // Pressing down sound
+      this.load.audio("collisionSound", "/assets/audio/bubble_collision.mp3"); // Bubble collision sound
+      this.load.audio("gameOverSound", "/assets/audio/game_over.mp3"); // Game over sound
+    }
 
-        this.load.spritesheet("character", "/assets/images/character.png", {
-          frameWidth: 32,
-          frameHeight: 43,
-        });
+    function create() {
+      // this.scale.displaySize.setAspectRatio(width / height);
+      // this.scale.refresh();
+      // Background as tileSprite
+      this.sky = this.add.tileSprite(400, 300, width, height, "background");
+      this.sky.setScrollFactor(0);
 
-        // Load audio assets
-        this.load.audio("ambientMusic", "/assets/audio/main.mp3"); // Ambient background music
-        this.load.audio("walkSound", "/assets/audio/walk.mp3"); // Walking sound
-        this.load.audio("jumpSound", "/assets/audio/jump.mp3"); // Jumping sound
-        this.load.audio("spaceJumpSound", "/assets/audio/space_jump.mp3"); // Space jump sound
-        this.load.audio("downPressSound", "/assets/audio/down_press.mp3"); // Pressing down sound
-        this.load.audio("collisionSound", "/assets/audio/bubble_collision.mp3"); // Bubble collision sound
-        this.load.audio("gameOverSound", "/assets/audio/game_over.mp3"); // Game over sound
+      // Platforms
+      platforms = this.physics.add.staticGroup();
+
+      let startPointGround = platforms.create(300, 480, "unitBubbleGround");
+      startPointGround.setScale(0.05);
+      startPointGround.refreshBody();
+      startPointGround.hasCollided = false;
+
+      generateInitialPlatforms.call(this);
+
+      // Player
+      player = this.physics.add.sprite(300, 350, "character");
+      player.setBounce(0);
+      player.setCollideWorldBounds(true);
+
+      createPlayerAnimations.call(this);
+
+      // Input
+      cursors = this.input.keyboard.createCursorKeys();
+      cursors.space = this.input.keyboard.addKey(
+        Phaser.Input.Keyboard.KeyCodes.SPACE
+      );
+      // Add 'R' key for reset
+      resetKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+
+      // Obstacles
+      easyBubbleObstacles = this.physics.add.group();
+      hardBubbleObstacles = this.physics.add.group();
+
+      // Score Text
+      scoreText = this.add
+        .text(16, 16, "Height: 0", { fontSize: "20px", fill: "#fff" })
+        .setScrollFactor(0)
+        .setDepth(10);
+
+      jumpText = this.add
+        .text(16, 40, "Extra Propulsion Ready", {
+          fontSize: "14px",
+          fill: "#fff",
+        })
+        .setScrollFactor(0)
+        .setDepth(10);
+
+      // Colliders
+      this.physics.add.collider(
+        player,
+        platforms,
+        null,
+        platformCollision,
+        this
+      );
+      this.physics.add.collider(easyBubbleObstacles, platforms);
+      this.physics.add.collider(hardBubbleObstacles, platforms);
+
+      this.physics.add.collider(
+        player,
+        easyBubbleObstacles,
+        hitObstacle,
+        null,
+        this
+      );
+      this.physics.add.collider(
+        player,
+        hardBubbleObstacles,
+        hitObstacle,
+        null,
+        this
+      );
+
+      // Camera
+      camera = this.cameras.main;
+      camera.startFollow(player, true, 0.05, 0.05);
+      camera.setBounds(0, -Infinity, 800, Infinity); // Allow infinite vertical scrolling
+
+      this.physics.world.setBounds(0, -Infinity, 800, Infinity); // Allow infinite vertical physics
+
+      // Create sound objects
+      this.ambientMusic = this.sound.add("ambientMusic", {
+        loop: true,
+        volume: 0.02,
+      });
+      this.walkSound = this.sound.add("walkSound", {
+        loop: true,
+        volume: 0.09,
+      });
+      this.jumpSound = this.sound.add("jumpSound", { volume: 0.1 });
+      this.spaceJumpSound = this.sound.add("spaceJumpSound", { volume: 0.3 });
+      this.downPressSound = this.sound.add("downPressSound", { volume: 0.3 });
+      this.collisionSound = this.sound.add("collisionSound", { volume: 0.1 });
+      this.gameOverSound = this.sound.add("gameOverSound", { volume: 1 });
+
+      // Play ambient music
+      this.ambientMusic.play();
+    }
+
+    function update(time, delta) {
+      handlePlayerMovement.call(this);
+      updateScore.call(this);
+      generatePlatforms.call(this);
+      cleanupObjects.call(this);
+      checkFallOutOfBounds.call(this, delta);
+      handleSpaceJumpCooldown.call(this, delta);
+      handleGameOver.call(this);
+
+      // Update background
+      this.sky.tilePositionY = this.cameras.main.scrollY * 0.5;
+    }
+
+    /* -------------------------------- FUNCTIONS ------------------------------- */
+    function generateInitialPlatforms() {
+      for (let i = 1; i < platformsAmount; i++) {
+        let x = Phaser.Math.Between(50, 750);
+        let y = 600 - i * 80;
+
+        let randomBubblesAmount = Phaser.Math.Between(2, 4);
+        for (let j = 0; j < randomBubblesAmount; j++) {
+          let bubble = platforms.create(x + j * 50, y, "unitBubbleGround");
+          bubble.setScale(0.05);
+          bubble.refreshBody();
+          bubble.hasCollided = false;
+        }
       }
+    }
 
-      function create() {
-        // Background as tileSprite
-        this.sky = this.add.tileSprite(400, 300, width, height, "background");
-        this.sky.setScrollFactor(0);
+    function createPlayerAnimations() {
+      this.anims.create({
+        key: "left",
+        frames: this.anims.generateFrameNumbers("character", {
+          start: 0,
+          end: 3,
+        }),
+        frameRate: 10,
+        repeat: -1,
+      });
 
-        // Platforms
-        platforms = this.physics.add.staticGroup();
+      this.anims.create({
+        key: "turn",
+        frames: [{ key: "character", frame: 4 }],
+        frameRate: 20,
+      });
 
-        let startPointGround = platforms.create(300, 480, "unitBubbleGround");
-        startPointGround.setScale(0.05);
-        startPointGround.refreshBody();
-        startPointGround.hasCollided = false;
+      this.anims.create({
+        key: "right",
+        frames: this.anims.generateFrameNumbers("character", {
+          start: 5,
+          end: 8,
+        }),
+        frameRate: 10,
+        repeat: -1,
+      });
+    }
 
-        generateInitialPlatforms.call(this);
+    function platformCollision(player, platform) {
+      const playerBody = player.body;
+      const platformBody = platform.body;
 
-        // Player
-        player = this.physics.add.sprite(300, 350, "character");
-        player.setBounce(0);
-        player.setCollideWorldBounds(true);
+      // Player is falling
+      if (playerBody.velocity.y > 0) {
+        const playerBottom = player.y + playerBody.height / 2;
+        const platformTop = platform.y - platformBody.height / 2;
 
-        createPlayerAnimations.call(this);
-
-        // Input
-        cursors = this.input.keyboard.createCursorKeys();
-        cursors.space = this.input.keyboard.addKey(
-          Phaser.Input.Keyboard.KeyCodes.SPACE
-        );
-        // Add 'R' key for reset
-        resetKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
-
-        // Obstacles
-        easyBubbleObstacles = this.physics.add.group();
-        hardBubbleObstacles = this.physics.add.group();
-
-        // Score Text
-        scoreText = this.add
-          .text(16, 16, "Height: 0", { fontSize: "20px", fill: "#fff" })
-          .setScrollFactor(0)
-          .setDepth(10);
-
-        jumpText = this.add
-          .text(16, 40, "Extra Propulsion Ready", {
-            fontSize: "14px",
-            fill: "#fff",
-          })
-          .setScrollFactor(0)
-          .setDepth(10);
-
-        // Colliders
-        this.physics.add.collider(
-          player,
-          platforms,
-          null,
-          platformCollision,
-          this
-        );
-        this.physics.add.collider(easyBubbleObstacles, platforms);
-        this.physics.add.collider(hardBubbleObstacles, platforms);
-
-        this.physics.add.collider(
-          player,
-          easyBubbleObstacles,
-          hitObstacle,
-          null,
-          this
-        );
-        this.physics.add.collider(
-          player,
-          hardBubbleObstacles,
-          hitObstacle,
-          null,
-          this
-        );
-
-        // Camera
-        camera = this.cameras.main;
-        camera.startFollow(player, true, 0.05, 0.05);
-        camera.setBounds(0, -Infinity, 800, Infinity); // Allow infinite vertical scrolling
-
-        this.physics.world.setBounds(0, -Infinity, 800, Infinity); // Allow infinite vertical physics
-
-        // Create sound objects
-        this.ambientMusic = this.sound.add("ambientMusic", {
-          loop: true,
-          volume: 0.02,
-        });
-        this.walkSound = this.sound.add("walkSound", {
-          loop: true,
-          volume: 0.25,
-        });
-        this.jumpSound = this.sound.add("jumpSound", { volume: 0.2 });
-        this.spaceJumpSound = this.sound.add("spaceJumpSound", { volume: 0.3 });
-        this.downPressSound = this.sound.add("downPressSound", { volume: 0.5 });
-        this.collisionSound = this.sound.add("collisionSound", { volume: 0.3 });
-        this.gameOverSound = this.sound.add("gameOverSound", { volume: 1 });
-
-        // Play ambient music
-        this.ambientMusic.play();
-      }
-
-      function update(time, delta) {
-        handlePlayerMovement.call(this);
-        updateScore.call(this);
-        generatePlatforms.call(this);
-        cleanupObjects.call(this);
-        checkFallOutOfBounds.call(this, delta);
-        handleSpaceJumpCooldown.call(this, delta);
-        handleGameOver.call(this);
-
-        // Update background
-        this.sky.tilePositionY = this.cameras.main.scrollY * 0.5;
-      }
-
-      /* -------------------------------- FUNCTIONS ------------------------------- */
-      function generateInitialPlatforms() {
-        for (let i = 1; i < platformsAmount; i++) {
-          let x = Phaser.Math.Between(50, 750);
-          let y = 600 - i * 80;
-
-          let randomBubblesAmount = Phaser.Math.Between(2, 4);
-          for (let j = 0; j < randomBubblesAmount; j++) {
-            let bubble = platforms.create(x + j * 50, y, "unitBubbleGround");
-            bubble.setScale(0.05);
-            bubble.refreshBody();
-            bubble.hasCollided = false;
+        if (playerBottom <= platformTop) {
+          if (!platform.hasCollided) {
+            platform.hasCollided = true;
+            this.collisionSound.play(); // Play collision sound
+            startBubbleExplosion.call(this, platform);
           }
+          return true;
         }
       }
 
-      function createPlayerAnimations() {
-        this.anims.create({
-          key: "left",
-          frames: this.anims.generateFrameNumbers("character", {
-            start: 0,
-            end: 3,
-          }),
-          frameRate: 10,
-          repeat: -1,
-        });
+      // Prevent collision
+      return false;
+    }
 
-        this.anims.create({
-          key: "turn",
-          frames: [{ key: "character", frame: 4 }],
-          frameRate: 20,
-        });
+    function startBubbleExplosion(platform) {
+      this.time.delayedCall(
+        400,
+        () => {
+          explodeBubble.call(this, platform);
+        },
+        [],
+        this
+      );
+    }
 
-        this.anims.create({
-          key: "right",
-          frames: this.anims.generateFrameNumbers("character", {
-            start: 5,
-            end: 8,
-          }),
-          frameRate: 10,
-          repeat: -1,
-        });
-      }
+    function explodeBubble(platform) {
+      platform.destroy();
+    }
 
-      function platformCollision(player, platform) {
-        const playerBody = player.body;
-        const platformBody = platform.body;
+    function handlePlayerMovement() {
+      if (cursors.left.isDown) {
+        player.setVelocityX(-160);
+        player.anims.play("left", true);
 
-        // Player is falling
-        if (playerBody.velocity.y > 0) {
-          const playerBottom = player.y + playerBody.height / 2;
-          const platformTop = platform.y - platformBody.height / 2;
-
-          if (playerBottom <= platformTop) {
-            if (!platform.hasCollided) {
-              platform.hasCollided = true;
-              this.collisionSound.play(); // Play collision sound
-              startBubbleExplosion.call(this, platform);
-            }
-            return true;
-          }
+        if (!this.walkSound.isPlaying) {
+          this.walkSound.play();
         }
+      } else if (cursors.right.isDown) {
+        player.setVelocityX(160);
+        player.anims.play("right", true);
 
-        // Prevent collision
-        return false;
+        if (!this.walkSound.isPlaying) {
+          this.walkSound.play();
+        }
+      } else {
+        player.setVelocityX(0);
+        player.anims.play("turn", true);
+
+        if (this.walkSound.isPlaying) {
+          this.walkSound.stop();
+        }
       }
 
-      function startBubbleExplosion(platform) {
-        this.time.delayedCall(
-          400,
-          () => {
-            explodeBubble.call(this, platform);
-          },
-          [],
-          this
-        );
+      if (cursors.up.isDown && player.body.touching.down) {
+        player.setVelocityY(-650); // Adjusted jump value
+        this.jumpSound.play(); // Play jump sound
       }
 
-      function explodeBubble(platform) {
-        platform.destroy();
+      // Allow to go down faster
+      if (cursors.down.isDown) {
+        player.setVelocityY(500);
+        this.downPressSound.play();
       }
 
-      function handlePlayerMovement() {
-        if (cursors.left.isDown) {
-          player.setVelocityX(-160);
-          player.anims.play("left", true);
-
-          if (!this.walkSound.isPlaying) {
-            this.walkSound.play();
-          }
-        } else if (cursors.right.isDown) {
-          player.setVelocityX(160);
-          player.anims.play("right", true);
-
-          if (!this.walkSound.isPlaying) {
-            this.walkSound.play();
-          }
+      // Space bar jump with cooldown
+      if (
+        cursors.space.isDown &&
+        !player.body.touching.space &&
+        //   player.body.velocity.y > 0 &&
+        canJumpSpace
+      ) {
+        if (player.body.velocity.y < 0) {
+          player.setVelocityY(player.body.velocity.y - 550); // Adjusted jump value
         } else {
-          player.setVelocityX(0);
-          player.anims.play("turn", true);
-
-          if (this.walkSound.isPlaying) {
-            this.walkSound.stop();
-          }
+          player.setVelocityY(-550); // Adjusted jump value
         }
+        this.spaceJumpSound.play(); // Play space jump sound
+        canJumpSpace = false;
+        cooldownTimer = spaceJumpCooldown;
+        updateCooldownText.call(this);
+      }
+    }
 
-        if (cursors.up.isDown && player.body.touching.down) {
-          player.setVelocityY(-650); // Adjusted jump value
-          this.jumpSound.play(); // Play jump sound
-        }
+    function updateScore() {
+      if (player.y < highestPoint || highestPoint === 0) {
+        highestPoint = player.y;
+        score = Math.max(score, initialPoint - highestPoint);
+        scoreTwoDecimal = score.toFixed(2);
+        scoreText.setText("Height: " + scoreTwoDecimal);
 
-        // Allow to go down faster
-        if (cursors.down.isDown) {
-          player.setVelocityY(500);
-          this.downPressSound.play();
-        }
-
-        // Space bar jump with cooldown
-        if (
-          cursors.space.isDown &&
-          !player.body.touching.space &&
-          //   player.body.velocity.y > 0 &&
-          canJumpSpace
-        ) {
-          if (player.body.velocity.y < 0) {
-            player.setVelocityY(player.body.velocity.y - 550); // Adjusted jump value
-          } else {
-            player.setVelocityY(-550); // Adjusted jump value
-          }
-          this.spaceJumpSound.play(); // Play space jump sound
-          canJumpSpace = false;
-          cooldownTimer = spaceJumpCooldown;
-          updateCooldownText.call(this);
+        // Check for milestone
+        if (score >= currentMilestone) {
+          handleMilestone.call(this);
+          currentMilestone += 10000; // Set next milestone
         }
       }
+    }
 
-      function updateScore() {
-        if (player.y < highestPoint || highestPoint === 0) {
-          highestPoint = player.y;
-          score = Math.max(score, initialPoint - highestPoint);
-          scoreTwoDecimal = score.toFixed(2);
-          scoreText.setText("Height: " + scoreTwoDecimal);
+    function generatePlatforms() {
+      platforms.children.iterate(function (platform) {
+        if (platform.y > camera.scrollY + 600) {
+          // Reposition the platform above the camera
+          platform.y = camera.scrollY - Phaser.Math.Between(50, 150);
+          platform.x = Phaser.Math.Between(50, 750);
 
-          // Check for milestone
-          if (score >= currentMilestone) {
-            handleMilestone.call(this);
-            currentMilestone += 10000; // Set next milestone
-          }
+          platform.hasCollided = false;
+
+          platform.refreshBody();
+
+          // Add obstacles based on difficulty
+          addObstacles.call(this, platform);
         }
+      }, this);
+    }
+
+    function addObstacles(platform) {
+      // Adjust obstacle spawn rates based on difficulty
+      let easyObstacleChance = Phaser.Math.Clamp(7 - difficultyLevel, 1, 10);
+      if (Phaser.Math.Between(0, easyObstacleChance) === easyObstacleChance) {
+        let easyBubbleObstacle = easyBubbleObstacles.create(
+          platform.x,
+          platform.y - 50,
+          "easyBubbleObstacle"
+        );
+        easyBubbleObstacle.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+        easyBubbleObstacle.setCircle(easyBubbleObstacle.width / 2);
+        easyBubbleObstacle.body.setOffset(0, 0);
       }
 
-      function generatePlatforms() {
-        platforms.children.iterate(function (platform) {
-          if (platform.y > camera.scrollY + 600) {
-            // Reposition the platform above the camera
-            platform.y = camera.scrollY - Phaser.Math.Between(50, 150);
-            platform.x = Phaser.Math.Between(50, 750);
+      let hardObstacleChance = Phaser.Math.Clamp(11 - difficultyLevel, 1, 15);
+      if (Phaser.Math.Between(0, hardObstacleChance) === hardObstacleChance) {
+        let hardBubbleObstacle = hardBubbleObstacles.create(
+          platform.x,
+          platform.y - 50,
+          "hardBubbleObstacle"
+        );
+        hardBubbleObstacle.setBounce(1);
+        hardBubbleObstacle.setCollideWorldBounds(true);
+        hardBubbleObstacle.setVelocity(
+          Phaser.Math.Between(
+            -200 - difficultyLevel * 20,
+            200 + difficultyLevel * 20
+          ),
+          20 + difficultyLevel * 10
+        );
+        hardBubbleObstacle.body.allowGravity = false;
+        hardBubbleObstacle.setCircle(hardBubbleObstacle.width / 2);
+        hardBubbleObstacle.body.setOffset(0, 0);
+      }
+    }
 
-            platform.hasCollided = false;
+    function cleanupObjects() {
+      const currentCamera = this.cameras.main;
 
-            platform.refreshBody();
+      const cleanupGroup = (group, groupName) => {
+        group.children.iterate(function (obstacle) {
+          if (!obstacle) {
+            console.warn(`Undefined obstacle found in ${groupName} group.`);
+            return;
+          }
 
-            // Add obstacles based on difficulty
-            addObstacles.call(this, platform);
+          if (obstacle.y > currentCamera.scrollY + 1000) {
+            obstacle.destroy();
+            console.log(
+              `Destroyed obstacle in ${groupName} group at y=${obstacle.y}`
+            );
           }
         }, this);
-      }
+      };
 
-      function addObstacles(platform) {
-        // Adjust obstacle spawn rates based on difficulty
-        let easyObstacleChance = Phaser.Math.Clamp(7 - difficultyLevel, 1, 10);
-        if (Phaser.Math.Between(0, easyObstacleChance) === easyObstacleChance) {
-          let easyBubbleObstacle = easyBubbleObstacles.create(
-            platform.x,
-            platform.y - 50,
-            "easyBubbleObstacle"
-          );
-          easyBubbleObstacle.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-          easyBubbleObstacle.setCircle(easyBubbleObstacle.width / 2);
-          easyBubbleObstacle.body.setOffset(0, 0);
-        }
+      cleanupGroup(easyBubbleObstacles, "easyBubbleObstacles");
+      cleanupGroup(hardBubbleObstacles, "hardBubbleObstacles");
+    }
 
-        let hardObstacleChance = Phaser.Math.Clamp(11 - difficultyLevel, 1, 15);
-        if (Phaser.Math.Between(0, hardObstacleChance) === hardObstacleChance) {
-          let hardBubbleObstacle = hardBubbleObstacles.create(
-            platform.x,
-            platform.y - 50,
-            "hardBubbleObstacle"
-          );
-          hardBubbleObstacle.setBounce(1);
-          hardBubbleObstacle.setCollideWorldBounds(true);
-          hardBubbleObstacle.setVelocity(
-            Phaser.Math.Between(
-              -200 - difficultyLevel * 20,
-              200 + difficultyLevel * 20
-            ),
-            20 + difficultyLevel * 10
-          );
-          hardBubbleObstacle.body.allowGravity = false;
-          hardBubbleObstacle.setCircle(hardBubbleObstacle.width / 2);
-          hardBubbleObstacle.body.setOffset(0, 0);
-        }
-      }
+    function hitObstacle(player, obstacle) {
+      this.collisionSound.play(); // Play collision sound
 
-      function cleanupObjects() {
-        const currentCamera = this.cameras.main;
+      this.physics.pause();
+      player.setTint(0xff0000);
+      player.anims.play("turn", true);
+      gameOver = true;
 
-        const cleanupGroup = (group, groupName) => {
-          group.children.iterate(function (obstacle) {
-            if (!obstacle) {
-              console.warn(`Undefined obstacle found in ${groupName} group.`);
-              return;
-            }
+      this.add
+        .text(camera.scrollX + 400, camera.scrollY + 300, "Game Over", {
+          fontSize: "64px",
+          fill: "#fff",
+        })
+        .setOrigin(0.5);
 
-            if (obstacle.y > currentCamera.scrollY + 1000) {
-              obstacle.destroy();
-              console.log(
-                `Destroyed obstacle in ${groupName} group at y=${obstacle.y}`
-              );
-            }
-          }, this);
-        };
+      // Play game over sound
+      this.gameOverSound.play();
+    }
 
-        cleanupGroup(easyBubbleObstacles, "easyBubbleObstacles");
-        cleanupGroup(hardBubbleObstacles, "hardBubbleObstacles");
-      }
-
-      function hitObstacle(player, obstacle) {
+    function checkFallOutOfBounds(delta) {
+      // Check the player is falling below the fallDownDistance, respect the highest point
+      if (player.y > highestPoint + fallDownDistance && !gameOver) {
         this.collisionSound.play(); // Play collision sound
 
         this.physics.pause();
@@ -475,105 +544,83 @@
         // Play game over sound
         this.gameOverSound.play();
       }
+    }
 
-      function checkFallOutOfBounds(delta) {
-        // Check the player is falling below the fallDownDistance, respect the highest point
-        if (player.y > highestPoint + fallDownDistance && !gameOver) {
-          this.collisionSound.play(); // Play collision sound
-
-          this.physics.pause();
-          player.setTint(0xff0000);
-          player.anims.play("turn", true);
-          gameOver = true;
-
-          this.add
-            .text(camera.scrollX + 400, camera.scrollY + 300, "Game Over", {
-              fontSize: "64px",
-              fill: "#fff",
-            })
-            .setOrigin(0.5);
-
-          // Play game over sound
-          this.gameOverSound.play();
-        }
-      }
-
-      // New Function: Handle Space Jump Cooldown
-      function handleSpaceJumpCooldown(delta) {
-        if (!canJumpSpace) {
-          cooldownTimer -= delta;
-          if (cooldownTimer <= 0) {
-            canJumpSpace = true;
-            cooldownTimer = 0;
-            updateCooldownText.call(this);
-          } else {
-            updateCooldownText.call(this);
-          }
-        }
-      }
-
-      // New Function: Update Cooldown Text
-      function updateCooldownText() {
-        if (canJumpSpace) {
-          jumpText.setText("Extra Propulsion Ready");
-        } else {
-          let remaining = (cooldownTimer / 1000).toFixed(1);
-          jumpText.setText("Extra Propulsion in: " + remaining + "s");
-        }
-      }
-
-      // New Function: Handle Milestones and Difficulty Increase
-      function handleMilestone() {
-        // Increase difficulty
-        difficultyLevel += 1;
-        console.log(
-          "Milestone reached! Difficulty increased to " + difficultyLevel
-        );
-
-        // Example: Increase gravity for added challenge
-        this.physics.world.gravity.y += 50;
-
-        // Reposition all platforms above the current view
-        platforms.children.iterate(function (platform) {
-          platform.y = this.cameras.main.scrollY - Phaser.Math.Between(50, 150);
-          platform.x = Phaser.Math.Between(50, 750);
-          platform.hasCollided = false;
-          platform.refreshBody();
-        }, this);
-
-        // Clear existing obstacles
-        easyBubbleObstacles.clear(true, true);
-        hardBubbleObstacles.clear(true, true);
-
-        // Optionally, spawn new obstacles based on increased difficulty
-      }
-
-      // New Function: Handle Game Over and Reset
-      function handleGameOver() {
-        // Listen for 'R' key to reset the game
-        if (Phaser.Input.Keyboard.JustDown(resetKey)) {
-          // Stop all sounds
-          this.walkSound.stop();
-          this.jumpSound.stop();
-          this.spaceJumpSound.stop();
-          this.downPressSound.stop();
-          this.collisionSound.stop();
-          this.gameOverSound.stop();
-          this.ambientMusic.stop();
-
-          // Reset variables
-          gameOver = false;
-          score = 0;
-          highestPoint = 0;
+    // New Function: Handle Space Jump Cooldown
+    function handleSpaceJumpCooldown(delta) {
+      if (!canJumpSpace) {
+        cooldownTimer -= delta;
+        if (cooldownTimer <= 0) {
           canJumpSpace = true;
           cooldownTimer = 0;
-          currentMilestone = 10000;
-          difficultyLevel = 1;
-
-          // Reload the scene
-          this.scene.restart();
+          updateCooldownText.call(this);
+        } else {
+          updateCooldownText.call(this);
         }
       }
-    </script>
-  </body>
+    }
+
+    // New Function: Update Cooldown Text
+    function updateCooldownText() {
+      if (canJumpSpace) {
+        jumpText.setText("Extra Propulsion Ready");
+      } else {
+        let remaining = (cooldownTimer / 1000).toFixed(1);
+        jumpText.setText("Extra Propulsion in: " + remaining + "s");
+      }
+    }
+
+    // New Function: Handle Milestones and Difficulty Increase
+    function handleMilestone() {
+      // Increase difficulty
+      difficultyLevel += 1;
+      console.log(
+        "Milestone reached! Difficulty increased to " + difficultyLevel
+      );
+
+      // Example: Increase gravity for added challenge
+      this.physics.world.gravity.y += 50;
+
+      // Reposition all platforms above the current view
+      platforms.children.iterate(function (platform) {
+        platform.y = this.cameras.main.scrollY - Phaser.Math.Between(50, 150);
+        platform.x = Phaser.Math.Between(50, 750);
+        platform.hasCollided = false;
+        platform.refreshBody();
+      }, this);
+
+      // Clear existing obstacles
+      easyBubbleObstacles.clear(true, true);
+      hardBubbleObstacles.clear(true, true);
+
+      // Optionally, spawn new obstacles based on increased difficulty
+    }
+
+    // New Function: Handle Game Over and Reset
+    function handleGameOver() {
+      // Listen for 'R' key to reset the game
+      if (Phaser.Input.Keyboard.JustDown(resetKey)) {
+        // Stop all sounds
+        this.walkSound.stop();
+        this.jumpSound.stop();
+        this.spaceJumpSound.stop();
+        this.downPressSound.stop();
+        this.collisionSound.stop();
+        this.gameOverSound.stop();
+        this.ambientMusic.stop();
+
+        // Reset variables
+        gameOver = false;
+        score = 0;
+        highestPoint = 0;
+        canJumpSpace = true;
+        cooldownTimer = 0;
+        currentMilestone = 10000;
+        difficultyLevel = 1;
+
+        // Reload the scene
+        this.scene.restart();
+      }
+    }
+  </script>
 </html>
