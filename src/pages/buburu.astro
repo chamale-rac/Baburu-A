@@ -86,7 +86,7 @@
 
       function preload() {
         // Load images and sprites
-        this.load.image("background", "/assets/images/background.png");
+        this.load.image("background", "/assets/images/Fondo00.png");
         this.load.image(
           "unitBubbleGround",
           "/assets/images/unit_bubble_ground.png"
@@ -117,8 +117,16 @@
 
       function create() {
         // Background
-        this.sky = this.add.tileSprite(400, 300, 800, 600, "background");
-        this.sky.setScrollFactor(0);
+        const scale = width / 1920; // 800 / 1920 ≈ 0.4167
+
+        // Add the background image
+        this.sky = this.add
+          .image(width / 2, height, "background")
+          .setOrigin(0.5, 0.8) // Set origin to bottom center
+          .setScale(scale); // Scale to fit width
+
+        // Ensure the background scrolls with the camera
+        this.sky.setScrollFactor(1);
 
         // Platforms
         platforms = this.physics.add.staticGroup();
@@ -502,6 +510,7 @@
           this.gameOverSound.stop();
 
           // Restart ambient music
+          this.ambientMusic.stop();
           this.ambientMusic.play();
 
           // Reload the scene
