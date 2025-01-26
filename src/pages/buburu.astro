@@ -27,13 +27,13 @@
   </head>
 
   <body>
-    <div id="instructions">
+    <!-- <div id="instructions">
       <ul>
         <li>Arrows (Up, Down, Left and Right) - Move</li>
         <li>Space - Extra Propulsion</li>
         <li>R - Restart</li>
       </ul>
-    </div>
+    </div> -->
 
     <script type="text/javascript">
       var width = 800;
@@ -205,12 +205,12 @@
         });
         this.walkSound = this.sound.add("walkSound", {
           loop: true,
-          volume: 0.25,
+          volume: 0.06,
         });
-        this.jumpSound = this.sound.add("jumpSound", { volume: 0.2 });
+        this.jumpSound = this.sound.add("jumpSound", { volume: 0.07 });
         this.spaceJumpSound = this.sound.add("spaceJumpSound", { volume: 0.3 });
         this.downPressSound = this.sound.add("downPressSound", { volume: 0.5 });
-        this.collisionSound = this.sound.add("collisionSound", { volume: 0.3 });
+        this.collisionSound = this.sound.add("collisionSound", { volume: 0.2 });
         this.gameOverSound = this.sound.add("gameOverSound", { volume: 1 });
 
         // Play ambient music
