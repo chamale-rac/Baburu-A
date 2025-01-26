@@ -1,11 +1,11 @@
 document.getElementById('playButton').addEventListener('click', function() {
-    var audio = new Audio("/assets/audio/jump.mp3"); 
+    var audio = new Audio("/assets/audio/menu1.mp3"); 
     audio.play(); 
 });
 const button = document.getElementById('playButton');
       
       // Create a new Audio object for the sound
-      const hoverSound = new Audio("/assets/audio/jump.mp3"); // Path to your sound file
+      const hoverSound = new Audio("/assets/audio/menu1.mp3"); // Path to your sound file
 
       // Play the sound when mouse enters the button
       button.addEventListener('mouseenter', function() {
@@ -25,7 +25,7 @@ const button = document.getElementById('playButton');
 const button2 = document.getElementById('settingButton');
       
      
-      const hoverSound2 = new Audio("/assets/audio/jump.mp3");
+      const hoverSound2 = new Audio("/assets/audio/menu1.mp3");
 
       button2.addEventListener('mouseenter', function() {
         hoverSound2.play();
@@ -40,7 +40,7 @@ const button2 = document.getElementById('settingButton');
 const button1 = document.getElementById('closeButton');
       
      
-      const hoverSound1 = new Audio("/assets/audio/jump.mp3");
+      const hoverSound1 = new Audio("/assets/audio/menu2.mp3");
 
       button1.addEventListener('mouseenter', function() {
         hoverSound1.play();
