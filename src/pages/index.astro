@@ -7,10 +7,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Baburu - Menu</title>
-
+    <link rel="stylesheet" href="https://use.typekit.net/pxq7jvg.css" />
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: "wilko-highlight", sans-serif;
+
+        font-weight: 100;
+        font-style: normal;
         margin: 0;
         padding: 0;
         background: #000000;
@@ -25,11 +28,14 @@
       }
 
       .menu-button {
+        font-family: "wilko-highlight", sans-serif;
+        font-weight: 400;
+        font-style: normal;
         display: block;
         background-color: #ba44ff;
         color: rgb(0, 0, 0);
         padding: 15px;
-        font-size: 1.2rem;
+        font-size: 1.6rem;
         text-decoration: none;
         border: none; /* Changed to none for better styling */
         border-radius: 5px;
@@ -80,19 +86,23 @@
       .modal-content h2 {
         margin-bottom: 20px;
         color: #000000;
-        font-size: 2rem;
+        font-weight: 100;
+        font-size: 4rem;
       }
       .modal-content p {
         margin-bottom: 30px;
-        font-size: 1.2rem;
+        font-size: 1.6rem;
         color: #333333;
       }
       .start-button {
+        font-family: "wilko-highlight", sans-serif;
+        font-weight: 100;
+        font-style: normal;
         background-color: #ba44ff;
-        color: #ffffff;
+        color: #000000;
         border: none;
         padding: 15px 30px;
-        font-size: 1.2rem;
+        font-size: 1.6rem;
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s;
@@ -110,6 +120,11 @@
         /* Adjusted height to account for modal */
         height: 80vh;
       }
+
+      .title {
+        font-size: 6rem;
+        margin-bottom: 30px;
+      }
     </style>
   </head>
   <body>
@@ -126,7 +141,7 @@
 
     <!-- Main Content -->
     <div class="container">
-      <div>BABURU</div>
+      <div class="title">BABURU</div>
       <button class="menu-button" id="playButton">Iniciar Juego</button>
       <button class="menu-button" id="aboutButton">About Us</button>
       <button class="menu-button" id="closeButton">Exit</button>
@@ -160,10 +175,10 @@
 
         // Configure ambient music
         ambientAudio.loop = true;
-        ambientAudio.volume = 0.50; // Increased volume to 30%
-        hoverSound.volume = 0.70
-        hoverSound1.volume = 0.70
-        hoverSound2.volume = 0.70
+        ambientAudio.volume = 0.5; // Increased volume to 30%
+        hoverSound.volume = 0.7;
+        hoverSound1.volume = 0.7;
+        hoverSound2.volume = 0.7;
         console.log("Audio objects initialized.");
 
         // Function to enable audio (called after user interaction)
