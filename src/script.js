@@ -51,6 +51,17 @@ const button1 = document.getElementById('closeButton');
         hoverSound1.currentTime = 0; 
       });
 
+
+      const sound = new Audio("/assets/audio/main.mp3"); // Path to your sound file
+
+      // Set the sound to loop
+      sound.loop = true;
+      sound.volume = 0.03;
+      // Automatically play the sound as soon as the page loads
+      window.addEventListener('load', () => {
+        sound.play(); // Start playing the sound in a loop
+      });
+
      
     
      

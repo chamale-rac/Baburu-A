@@ -64,13 +64,17 @@
   <body>
     
     <div class="container">
-      BUBURU
+      <h1 id="backgroundSound">BUBURU</h1>
       <button class="menu-button" id="playButton" onclick="window.location.href = 'buburu'">Iniciar Juego</button>
       <button class="menu-button" id="settingButton" onclick="window.location.href = 'buburu'">Settings</button>
       <button class="menu-button" id="closeButton">Exit</button>
     </div>
 
-    
+    <audio id="backgroundSound" loop autoplay>
+      <source src="../mainmenu.mp3" type="audio/mp3">
+      
+    </audio>
+
     <script src="../script.js"></script>
   </body>
 
